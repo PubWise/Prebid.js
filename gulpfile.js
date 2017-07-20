@@ -40,10 +40,10 @@ gulp.task('run-tests', ['clean', 'lint', 'webpack', 'test', 'mocha']);
 gulp.task('build', ['webpack']);
 
 gulp.task('clean', function () {
-  return gulp.src(['build'], {
+  /*return gulp.src(['build'], {
       read: false
     })
-    .pipe(clean());
+    .pipe(clean());*/
 });
 
 gulp.task('devpack', ['clean'], function () {
