@@ -18,9 +18,8 @@ script:
 
 deploy:
   provider: gcs
-  access_key_id: "GCS Interoperable Access Key ID"
-  secret_access_key: "GCS Interoperable Access Secret"
-  bucket: "GCS Bucket"
+  access_key_id: "GOOGC4VNIX2ZKBHBONUB"  
+  bucket: "pw-deploy-customer-builds"
   skip_cleanup: true
   acl: public-read
   local-dir: build/dist
