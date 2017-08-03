@@ -15,3 +15,12 @@ before_install:
 
 script:
   - gulp run-tests
+
+deploy:
+  provider: gcs
+  access_key_id: "GCS Interoperable Access Key ID"
+  secret_access_key: "GCS Interoperable Access Secret"
+  bucket: "GCS Bucket"
+  skip_cleanup: true
+  acl: public-read
+  local-dir: build/dist
