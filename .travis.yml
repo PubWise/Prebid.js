@@ -23,3 +23,5 @@ deploy:
   skip_cleanup: true
   acl: public-read
   local-dir: build/dist
+  on:
+    branch: pwfrom02601
