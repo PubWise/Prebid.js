@@ -24,7 +24,7 @@ deploy:
   bucket: "pw-deploy-customer-builds"
   skip_cleanup: true
   acl: public-read
-  local-dir: build/dist/
+  local-dir: ~/build/PubWise/Prebid.js/build/dist/
   on:
     branch: pwfrom02601
 
