@@ -24,7 +24,7 @@ deploy:
   bucket: "pw-deploy-customer-builds"
   skip_cleanup: true
   acl: public-read
-  local-dir: "/home/travis/build/PubWise/Prebid.js/build/dist/"
+  local-dir: "/home/travis/build/PubWise/Prebid.js/build/dist/prebid.js"
   on:
     branch: pwfrom02601
 
