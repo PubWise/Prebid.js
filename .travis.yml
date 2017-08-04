@@ -27,7 +27,7 @@ deploy:
   upload-dir: test
   skip_cleanup: true
   acl: public-read
-  local-dir: "/home/travis/build/PubWise/Prebid.js/build/dist/"
+  local-dir: "/home/travis/build/PubWise/Prebid.js/build/pwdeploy/"
   on:
     branch: pwfrom02601
 
