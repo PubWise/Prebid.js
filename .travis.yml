@@ -22,8 +22,7 @@ deploy:
   access_key_id: "GOOGC4VNIX2ZKBHBONUB"
   secret_access_key:
         secure: fdPUwiikYplFHnqkR2hjSk6FGF8wKue9/1ZAkJx6e0RHTLfgM6OXYfztyiOPTQ3TlDj4ysn/odOnTs9RO/d1ISxK04qhO2IM6lUeVvexeLb0jQ5Ch0zkzC5pjzxyr3JAPEiO5x9DKU6+FroA8gY5EffycFT+7GRt3d/9/blMGMYPf1ga17aBEQfuRIMLNExgJGdqn9tTCSKgdvjspWLjvXQl1F7LAO/DNEgy5OBv+VYmc466wQCpYR2nyi8HkjoPPFAYBkL7LAcAWeJvusVBxWgodK1q4VPDsgrZjuuLaw44652GWvsfpx7BS/VYszexrf3Dy5HhKBSzo1fDO5+RImuTGCgaquWuIGpoBLwtwX7VI/PSM/wP6XpEy3943hFeHl6dSB3367WtWKber8Op4RCyoRLVewe8Ol2NTWzoGy9judBz2WZIkzAiEsd0xCEB+f5/jOQiC43lorgtf4ZCnp/CLN0zQaDqs+nZaI4OJTbdKExEBS/cFN4STMHvc9Lrv7BARC1gnPB+N738xI8uC/olaH+7etdwfaN406YDhxyIglJf6d1SKzfGPyIZV5fW5UEhWoC+08pqkcusooO1nYOgA5G9SL5q4IUqZAW1eFSINZm2Ew5TG2C4yQZMNYCWPZPpOOTNag/3rkXvSKw07lxDLxUhnV1+A9DYGGWGYKw=
-  bucket: "pw-deploy-customer-builds"
-  prefix: "/test"
+  bucket: "pw-deploy-customer-builds/test"  
   skip_cleanup: true
   acl: public-read
   local-dir: "/home/travis/build/PubWise/Prebid.js/build/dist/"
