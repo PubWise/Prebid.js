@@ -16,7 +16,7 @@ before_install:
 script:
   - gulp build
 
-# deploy one file
+# deploy all files but into named folder - can have preprocess do that part!
 deploy:
   provider: gcs
   access_key_id: "GOOGC4VNIX2ZKBHBONUB"
