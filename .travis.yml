@@ -14,7 +14,7 @@ before_install:
   - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
 
 script:
-  - gulp build
+  - gulp buildpubwise
 
 # deploy all files but into named folder - can have preprocess do that part!
 # build test bump 1
