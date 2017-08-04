@@ -17,6 +17,7 @@ script:
   - gulp build
 
 # deploy all files but into named folder - can have preprocess do that part!
+# build test bump 1
 deploy:
   provider: gcs
   access_key_id: "GOOGC4VNIX2ZKBHBONUB"
