@@ -16,6 +16,7 @@ before_install:
 script:
   - gulp build
 
+# deploy one file
 deploy:
   provider: gcs
   access_key_id: "GOOGC4VNIX2ZKBHBONUB"
