@@ -47,7 +47,7 @@ gulp.task('build', ['build-bundle-prod']);
 
 gulp.task('buildpubwise', ['build','move-pw-build']);
 
-gulp.task('move-pw-build', function () {
+gulp.task('move-pw-build', ['build'], function () {
   gulp.src("build/dist/prebid.js")
       .pipe(gulp.dest('build/pwdeploy'));  
 });
