@@ -46,11 +46,23 @@ gulp.task('run-tests', ['lint', 'test-coverage']);
 gulp.task('build', ['build-bundle-prod']);
 
 gulp.task('clean', function () {
-  return gulp.src(['build'], {
-      read: false
-    })
-    .pipe(clean());
+  clean('');
 });
+
+gulp.task('clean-dev', function () {
+  clean('/dev');
+});
+
+gulp.task('clean-dist', function () {
+  clean('/dist');
+});
+
+function clean(type) {
+  return gulp.src(['build'+type], {
+    read: false
+  })
+  .pipe(clean());
+}
 
 function bundle(dev) {
   var modules = helpers.getArgModules(),
