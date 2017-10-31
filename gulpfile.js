@@ -53,7 +53,7 @@ gulp.task('move-pw-build', ['build'], function () {
   .pipe(gulp.dest('build/pwdeploy'));
 });
 
-gulp.task('move-pw-build', ['build'], function () {
+gulp.task('move-pw-dev', ['build-bundle-dev'], function () {
   gulp.src('build/dev/prebid.js')
   .pipe(gulp.dest('build/pwdeploy/dev'));
 });
