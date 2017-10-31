@@ -23,7 +23,7 @@ const utils = require('src/utils');
 const analyticsType = 'endpoint';
 const analyticsName = 'PubWise Analytics: ';
 let defaultUrl = 'https://api.pubwise.io/api/v4/event/default/';
-let pubwiseVersion = '2.2';
+let pubwiseVersion = '6.06';
 let configOptions = {site: '', endpoint: 'https://api.pubwise.io/api/v4/event/default/', debug: ''};
 let pwAnalyticsEnabled = false;
 let utmKeys = {utm_source: '', utm_medium: '', utm_campaign: '', utm_term: '', utm_content: ''};
@@ -60,7 +60,7 @@ function enrichWithUTM(dataBag) {
     if (newUtm === false) {
       for (let prop in utmKeys) {
         let itemValue = localStorage.getItem(`pw-${prop}`);
-        if (itemValue.length !== 0) {
+        if (typeof itemValue !== 'undefined' && itemValue.length !== 0) {
           dataBag[prop] = itemValue;
         }
       }

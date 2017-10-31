@@ -46,6 +46,13 @@ gulp.task('run-tests', ['lint', 'test-coverage']);
 
 gulp.task('build', ['build-bundle-prod']);
 
+gulp.task('buildpubwise', ['build','move-pw-build']);
+
+gulp.task('move-pw-build', ['build'], function () {
+  gulp.src('build/dist/prebid.js')
+  .pipe(gulp.dest('build/pwdeploy'));
+});
+
 gulp.task('clean', function () {
   return gulp.src(['build'], {
       read: false
