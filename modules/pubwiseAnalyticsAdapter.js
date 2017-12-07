@@ -7,7 +7,7 @@ const utils = require('src/utils');
 /****
  * PubWise.io Analytics
  * Contact: support@pubwise.io
- * Developer: Stephen Johnston
+ * Developer: Stephen Johnston & PubWise Team
  *
  * For testing:
  *

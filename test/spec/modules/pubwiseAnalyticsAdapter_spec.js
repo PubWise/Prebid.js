@@ -261,6 +261,8 @@ let ignoreTestEvents = [{
   }
 }];
 
+let defaultSessionExpiration = 1800000;
+
 describe('Testing PubWise', function () {
   adaptermanager.registerAnalyticsAdapter({
     code: 'pubwise',
@@ -294,10 +296,17 @@ describe('Testing PubWise', function () {
 
     describe('If Session Expires then a New One Is Created', function () {
       it(`Calls storeSessionID to Add`, function () {
-        let defaultTimer = 1800000;
-        localStorage.setItem('pubwise_sess_timeout', Date.now() - 1800000 - 10); // 10 extra seconds to expire it
+        localStorage.setItem('pubwise_sess_timeout', Date.now() - defaultSessionExpiration - 10); // 10 extra seconds to expire it
         events.emit(constants.EVENTS.AUCTION_INIT, {});
         sinon.assert.callCount(pubwiseAnalytics.storeSessionID, 1);
+      });
+    });
+
+    describe('If Session Is NOT Expired then a New One Is NOT Created', function () {
+      it(`Calls storeSessionID to Add`, function () {
+        localStorage.setItem('pubwise_sess_timeout', Date.now() - defaultSessionExpiration + 10); // 10 seconds until expiration
+        events.emit(constants.EVENTS.AUCTION_INIT, {});
+        sinon.assert.callCount(pubwiseAnalytics.storeSessionID, 0); // no call
       });
     });
 
@@ -315,7 +324,7 @@ describe('Testing PubWise', function () {
         events.emit(constants.EVENTS.BID_REQUESTED, {});
         events.emit(constants.EVENTS.BID_RESPONSE, {});
         events.emit(constants.EVENTS.BID_WON, {});
-        sinon.assert.callCount(pubwiseAnalytics.ensureSession, 0);
+        sinon.assert.callCount(pubwiseAnalytics.ensureSession, 0); // no call
         pubwiseAnalytics.ensureSession.restore();
       });
     });
