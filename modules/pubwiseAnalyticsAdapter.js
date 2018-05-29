@@ -60,7 +60,7 @@ function enrichWithUTM(dataBag) {
     if (newUtm === false) {
       for (let prop in utmKeys) {
         let itemValue = localStorage.getItem(`pw-${prop}`);
-        if (itemValue.length !== 0) {
+        if (itemValue !== null && itemValue.length !== 0) {
           dataBag[prop] = itemValue;
         }
       }
