@@ -111,8 +111,7 @@ function sendEvent(eventType, data) {
   let dataBag = {
     eventType: eventType,
     args: data,
-    target_site: configOptions.site,
-    pubwiseSchema: pubwiseSchema,
+    target_site: configOptions.site,    
     debug: configOptions.debug ? 1 : 0,
   };
 
