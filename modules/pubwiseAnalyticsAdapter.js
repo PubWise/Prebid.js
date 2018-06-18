@@ -23,8 +23,8 @@ const utils = require('src/utils');
 const analyticsType = 'endpoint';
 const analyticsName = 'PubWise Analytics: ';
 let defaultUrl = 'https://api.pubwise.io/api/v4/event/default/';
-let pubwiseVersion = '2.2';
-let configOptions = {site: '', endpoint: 'https://api.pubwise.io/api/v4/event/default/', debug: ''};
+let pubwiseVersion = '2.3';
+let configOptions = {site: '', endpoint: 'https://api.pubwise.io/api/v4/event/default/', debug: '', c_host: '', c_script_type: '', c_slot1: '', c_slot2: '', c_slot3: '', c_slot4: ''};
 let pwAnalyticsEnabled = false;
 let utmKeys = {utm_source: '', utm_medium: '', utm_campaign: '', utm_term: '', utm_content: ''};
 
@@ -49,8 +49,7 @@ function enrichWithUTM(dataBag) {
   let newUtm = false;
   try {
     for (let prop in utmKeys) {
-      let urlValue = utils.getParameterByName(prop);
-      utmKeys[prop] = urlValue;
+      utmKeys[prop] = utils.getParameterByName(prop);
       if (utmKeys[prop] != '') {
         newUtm = true;
         dataBag[prop] = utmKeys[prop];
@@ -60,7 +59,7 @@ function enrichWithUTM(dataBag) {
     if (newUtm === false) {
       for (let prop in utmKeys) {
         let itemValue = localStorage.getItem(`pw-${prop}`);
-        if (itemValue.length !== 0) {
+        if (itemValue !== null && itemValue.length !== 0) {
           dataBag[prop] = itemValue;
         }
       }
@@ -76,6 +75,35 @@ function enrichWithUTM(dataBag) {
   return dataBag;
 }
 
+function enrichWithCustomSegments(dataBag) {
+  // c_site: '', c_script_type: '', c_slot1: '', c_slot2: '', c_slot3: '', c_slot4: ''
+  if (configOptions.c_host != '') {
+    dataBag['c_host'] = configOptions.c_host;
+  }
+
+  if (configOptions.c_script_type != '') {
+    dataBag['c_script_type'] = configOptions.c_script_type;
+  }
+
+  if (configOptions.c_slot1 != '') {
+    dataBag['c_slot1'] = configOptions.c_slot1;
+  }
+
+  if (configOptions.c_slot2 != '') {
+    dataBag['c_slot2'] = configOptions.c_slot2;
+  }
+
+  if (configOptions.c_slot3 != '') {
+    dataBag['c_slot3'] = configOptions.c_slot3;
+  }
+
+  if (configOptions.c_slot4 != '') {
+    dataBag['c_slot4'] = configOptions.c_slot4;
+  }
+
+  return dataBag;
+}
+
 function sendEvent(eventType, data) {
   utils.logInfo(`${analyticsName}Event ${eventType} ${pwAnalyticsEnabled}`, data);
 
@@ -84,13 +112,15 @@ function sendEvent(eventType, data) {
     eventType: eventType,
     args: data,
     target_site: configOptions.site,
+    pubwiseSchema: pubwiseSchema,
     debug: configOptions.debug ? 1 : 0,
   };
 
+  dataBag = enrichWithMetrics(dataBag);
   // for certain events, track additional info
   if (eventType == CONSTANTS.EVENTS.AUCTION_INIT) {
-    dataBag = enrichWithMetrics(dataBag);
     dataBag = enrichWithUTM(dataBag);
+    dataBag = enrichWithCustomSegments(dataBag);
   }
 
   ajax(configOptions.endpoint, (result) => utils.logInfo(`${analyticsName}Result`, result), JSON.stringify(dataBag));
