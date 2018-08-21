@@ -67,8 +67,15 @@ exports.getUniqueIdentifierStr = _getUniqueIdentifierStr;
  * https://gist.github.com/jed/982883 via node-uuid
  */
 exports.generateUUID = function generateUUID(placeholder) {
+  let randomSource = null;
+  if (window && window.crypto && window.crypto.getRandomValues) {
+    randomSource = crypto.getRandomValues(new Uint8Array(1))[0] % 16 >> placeholder / 4;
+  } else {
+    randomSource = Math.random() * 16 >> placeholder / 4;
+  }
+
   return placeholder
-    ? (placeholder ^ Math.random() * 16 >> placeholder / 4).toString(16)
+    ? (placeholder ^ randomSource).toString(16)
     : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, generateUUID);
 };
 
