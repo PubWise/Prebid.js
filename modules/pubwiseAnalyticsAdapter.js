@@ -15,7 +15,7 @@ const utils = require('src/utils');
   provider: 'pubwise',
   options: {
     site: 'test-test-test-test',
-    endpoint: 'https://api.pubwise.io/api/v4/event/add/',
+    endpoint: 'https://api.pubwise.io/api/v5/event/add/',
   }
  });
  */
@@ -23,10 +23,12 @@ const utils = require('src/utils');
 const analyticsType = 'endpoint';
 const analyticsName = 'PubWise Analytics: ';
 let defaultUrl = 'https://api.pubwise.io/api/v4/event/default/';
-let pubwiseVersion = '2.2';
+let pubwiseVersion = '2.5';
 let configOptions = {site: '', endpoint: 'https://api.pubwise.io/api/v4/event/default/', debug: ''};
 let pwAnalyticsEnabled = false;
 let utmKeys = {utm_source: '', utm_medium: '', utm_campaign: '', utm_term: '', utm_content: ''};
+let pwEvents = [];
+let metaData = {};
 
 function markEnabled() {
   utils.logInfo(`${analyticsName}Enabled`, configOptions);
@@ -79,6 +81,23 @@ function enrichWithUTM(dataBag) {
 function sendEvent(eventType, data) {
   utils.logInfo(`${analyticsName}Event ${eventType} ${pwAnalyticsEnabled}`, data);
 
+  // add data on init to the metadata container
+  if (eventType == CONSTANTS.EVENTS.AUCTION_INIT) {
+    // record metadata
+    metaData = {
+      target_site: configOptions.site,
+      debug: configOptions.debug ? 1 : 0,
+    };
+    dataBag = enrichWithMetrics(metaData);
+    dataBag = enrichWithUTM(metaData);
+  }
+  // add all events except bidWon to the monolithic event handler
+  pwEvents.push({
+    eventType: eventType,
+    args: data});
+
+
+
   // put the typical items in the data bag
   let dataBag = {
     eventType: eventType,
@@ -89,10 +108,13 @@ function sendEvent(eventType, data) {
 
   // for certain events, track additional info
   if (eventType == CONSTANTS.EVENTS.AUCTION_INIT) {
-    dataBag = enrichWithMetrics(dataBag);
-    dataBag = enrichWithUTM(dataBag);
+
   }
 
+
+}
+
+function flushEvents() {
   ajax(configOptions.endpoint, (result) => utils.logInfo(`${analyticsName}Result`, result), JSON.stringify(dataBag));
 }
 
