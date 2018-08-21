@@ -28,6 +28,9 @@ let pubwiseSchema = 'AVOCET';
 let configOptions = {site: '', endpoint: 'https://api.pubwise.io/api/v4/event/default/', debug: ''};
 let pwAnalyticsEnabled = false;
 let utmKeys = {utm_source: '', utm_medium: '', utm_campaign: '', utm_term: '', utm_content: ''};
+let pwEvents = [];
+let metaData = {};
+let lateEvent = false;
 
 function markEnabled() {
   utils.logInfo(`${analyticsName}Enabled`, configOptions);
@@ -79,21 +82,36 @@ function enrichWithUTM(dataBag) {
 function sendEvent(eventType, data) {
   utils.logInfo(`${analyticsName}Event ${eventType} ${pwAnalyticsEnabled}`, data);
 
-  // put the typical items in the data bag
-  let dataBag = {
-    eventType: eventType,
-    args: data,
-    target_site: configOptions.site,
-    pubwiseSchema: pubwiseSchema,
-    debug: configOptions.debug ? 1 : 0,
-  };
-
-  dataBag = enrichWithMetrics(dataBag);
-  // for certain events, track additional info
+  // add data on init to the metadata container
   if (eventType == CONSTANTS.EVENTS.AUCTION_INIT) {
-    dataBag = enrichWithUTM(dataBag);
+    // record metadata
+    metaData = {
+      target_site: configOptions.site,
+      debug: configOptions.debug ? 1 : 0,
+    };
+    metaData = enrichWithMetrics(metaData);
+    metaData = enrichWithUTM(metaData);
   }
 
+  if (eventType == CONSTANTS.EVENTS.AUCTION_END) {
+    lateEvent = true;
+  }
+
+  // add all events except bidWon to the monolithic event handler
+  pwEvents.push({
+    eventType: eventType,
+    args: data});
+
+  if (eventType == CONSTANTS.EVENTS.SET_TARGETING || eventType == CONSTANTS.EVENTS.BID_WON) {
+    // we consider auction_end to to be the end of the auction
+    flushEvents();
+  }
+}
+
+function flushEvents() {
+  let localEvents = pwEvents; // get a copy
+  pwEvents = []; // clear the queue
+  let dataBag = {metaData: metaData, eventList: localEvents};
   ajax(configOptions.endpoint, (result) => utils.logInfo(`${analyticsName}Result`, result), JSON.stringify(dataBag));
 }
 
