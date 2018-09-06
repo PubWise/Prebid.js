@@ -31,7 +31,7 @@ let sessionData = {sessionId: ''};
 let pwNamespace = 'pubwise';
 let pwEvents = [];
 let metaData = {};
-let lateEvent = false;
+let auctionEnded = false;
 let sessTimeout = 60 * 30 * 1000; // 30 minutes, G Analytics default session length
 let sessName = 'sess_id';
 let sessTimeoutName = 'sess_timeout';
@@ -153,10 +153,41 @@ function sessionExpired() {
 }
 
 function flushEvents() {
-  let localEvents = pwEvents; // get a copy
-  pwEvents = []; // clear the queue
-  let dataBag = {metaData: metaData, eventList: localEvents};
-  ajax(configOptions.endpoint, (result) => utils.logInfo(`${analyticsName}Result`, result), JSON.stringify(dataBag));
+  if (pwEvents.length > 0) {
+    let localEvents = pwEvents; // get a copy
+    pwEvents = []; // clear the queue
+    let dataBag = {metaData: metaData, eventList: localEvents};
+    ajax(configOptions.endpoint, (result) => utils.logInfo(`${analyticsName}Result`, result), JSON.stringify(dataBag));
+  }
+}
+
+function isIngestedEvent(eventType) {
+  const ingested = [CONSTANTS.EVENTS.AUCTION_INIT,CONSTANTS.EVENTS.BID_REQUESTED,CONSTANTS.EVENTS.BID_RESPONSE,CONSTANTS.EVENTS.BID_WON,CONSTANTS.EVENTS.BID_TIMEOUT];
+  if (ingested.includes(eventType)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function filterBidResponse(data) {
+  let modified = Object.assign({}, data);
+  if (typeof data.ad !== 'undefined') {
+    modified.ad = '-';
+  }
+  if (typeof data.adUrl !== 'undefined') {
+    modified.adUrl = '-';
+  }
+  if (typeof data.statusMessage !== 'undefined' && data.statusMessage == 'Bid returned empty or error response') {
+    modified.statusMessage = 'empty';
+  }
+  if (typeof data.ts !== 'undefined') {
+    modified.ts = 'empty';
+  }
+  if (typeof data.adserverTargeting !== 'undefined') {
+    modified.adserverTargeting = {};
+  }
+  return modified;
 }
 
 let pubwiseAnalytics = Object.assign(adapter(
@@ -175,7 +206,7 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
   utils.logInfo(`${analyticsName} Emitting Event ${eventType} ${pwAnalyticsEnabled}`, data);
 
   // we log most events, but some are information
-  if (eventType != CONSTANTS.EVENTS.SET_TARGETING && eventType != CONSTANTS.EVENTS.ADD_AD_UNITS && eventType != CONSTANTS.EVENTS.REQUEST_BIDS && eventType != CONSTANTS.EVENTS.AUCTION_END) {
+  if (isIngestedEvent(eventType)) {
     // add data on init to the metadata container
     if (eventType == CONSTANTS.EVENTS.AUCTION_INIT) {
       this.ensureSession();
@@ -190,18 +221,22 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
       metaData = enrichWithUTM(metaData);
     }
 
-    if (eventType == CONSTANTS.EVENTS.AUCTION_END) {
-      lateEvent = true;
+    if (eventType == CONSTANTS.EVENTS.BID_RESPONSE) {
+      data = filterBidResponse(data);
     }
 
-    // add all events until SET_TARGETING to the monolithic event handler
+    // add all ingested events
     pwEvents.push({
       eventType: eventType,
       args: data
     });
   }
 
-  if (eventType == CONSTANTS.EVENTS.SET_TARGETING || eventType == CONSTANTS.EVENTS.BID_WON || lateEvent == true) {
+  if (eventType == CONSTANTS.EVENTS.AUCTION_END) {
+    auctionEnded = true;
+  }
+
+  if (eventType == CONSTANTS.EVENTS.SET_TARGETING || eventType == CONSTANTS.EVENTS.BID_WON || auctionEnded == true) {
     // we consider auction_end to to be the end of the auction
     flushEvents();
   }

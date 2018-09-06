@@ -67,8 +67,8 @@ exports.generateUUID = function generateUUID(placeholder) {
 };
 
 /**
- * returns random data using the Crypto API if available and Math.random if not
- * 
+ * Returns random data using the Crypto API if available and Math.random if not
+ *
  * @returns {number}
  * @private
  */
