@@ -63,12 +63,27 @@ exports.getUniqueIdentifierStr = _getUniqueIdentifierStr;
  * where each x is replaced with a random hexadecimal digit from 0 to f,
  * and y is replaced with a random hexadecimal digit from 8 to b.
  * https://gist.github.com/jed/982883 via node-uuid
+ * randomSource is derived from crypto API if available
  */
 exports.generateUUID = function generateUUID(placeholder) {
   return placeholder
-    ? (placeholder ^ Math.random() * 16 >> placeholder / 4).toString(16)
+    ? (placeholder ^ _getRandomData() >> placeholder / 4).toString(16)
     : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, generateUUID);
 };
+
+/**
+ * Returns random data using the Crypto API if available and Math.random if not
+ *
+ * @returns {number}
+ * @private
+ */
+function _getRandomData() {
+  if (window && window.crypto && window.crypto.getRandomValues) {
+    return crypto.getRandomValues(new Uint8Array(1))[0] % 16;
+  } else {
+    return Math.random() * 16;
+  }
+}
 
 exports.getBidIdParameter = function (key, paramsObj) {
   if (paramsObj && paramsObj[key]) {

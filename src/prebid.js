@@ -314,6 +314,7 @@ $$PREBID_GLOBAL$$.removeAdUnit = function (adUnitCode) {
  */
 $$PREBID_GLOBAL$$.requestBids = createHook('asyncSeries', function ({ bidsBackHandler, timeout, adUnits, adUnitCodes, labels } = {}) {
   events.emit(REQUEST_BIDS);
+  console.log('PubWise Analytics: Emitting Event timeout setting',config.getConfig('bidderTimeout'));
   const cbTimeout = timeout || config.getConfig('bidderTimeout');
   adUnits = adUnits || $$PREBID_GLOBAL$$.adUnits;
 
