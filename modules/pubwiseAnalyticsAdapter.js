@@ -208,14 +208,14 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
     if (eventType == CONSTANTS.EVENTS.AUCTION_INIT) {
       this.ensureSession();
       // record metadata
-      data = {
+      metaData = {
         target_site: configOptions.site,
         debug: configOptions.debug ? 1 : 0,
       };
-      data = enrichWithSessionInfo(metaData);
-      data = enrichWithCustomSegments(metaData);
-      data = enrichWithMetrics(metaData);
-      data = enrichWithUTM(metaData);
+      metaData = enrichWithSessionInfo(metaData);
+      metaData = enrichWithCustomSegments(metaData);
+      metaData = enrichWithMetrics(metaData);
+      metaData = enrichWithUTM(metaData);
     }
 
     if (eventType == CONSTANTS.EVENTS.BID_RESPONSE) {
