@@ -98,6 +98,13 @@ function enrichWithUTM(dataBag) {
   return dataBag;
 }
 
+function expireUtmData() {
+  utils.logInfo(`${analyticsName} Session Expiring UTM Data`);
+  for (let prop in utmKeys) {
+    localStorage.removeItem(setNamespace(prop));
+  }
+}
+
 function enrichWithCustomSegments(dataBag) {
   // c_site: '', c_script_type: '', c_slot1: '', c_slot2: '', c_slot3: '', c_slot4: ''
   if (configOptions.c_host) {
@@ -206,7 +213,6 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
   if (isIngestedEvent(eventType)) {
     // add data on init to the metadata container
     if (eventType == CONSTANTS.EVENTS.AUCTION_INIT) {
-      this.ensureSession();
       // record metadata
       metaData = {
         target_site: configOptions.site,
@@ -241,17 +247,17 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
 
 pubwiseAnalytics.storeSessionID = function (userSessID) {
   localStorage.setItem(localStorageSessName(), userSessID);
+  utils.logInfo(`${analyticsName} New Session Generated`, userSessID);
 };
 
 // ensure a session exists, if not make one, always store it
 pubwiseAnalytics.ensureSession = function () {
-  // namespace.concat();
-  if (sessionExpired() === true) {
-    let userSessID = utils.generateUUID();
-    this.storeSessionID(userSessID);
+  if (sessionExpired() === true || userSessionID() === null || userSessionID() === '') {
+    expireUtmData();
+    this.storeSessionID(utils.generateUUID());
   }
-  sessionData.sessId = userSessionID();
   extendUserSessionTimeout();
+  sessionData.sessId = userSessionID();
 };
 
 pubwiseAnalytics.adapterEnableAnalytics = pubwiseAnalytics.enableAnalytics;
@@ -262,6 +268,7 @@ pubwiseAnalytics.enableAnalytics = function (config) {
   }
   configOptions = config.options;
   markEnabled();
+  this.ensureSession();
   pubwiseAnalytics.adapterEnableAnalytics(config);
 };
 
