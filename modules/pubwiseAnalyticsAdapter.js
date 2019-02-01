@@ -23,7 +23,7 @@ const utils = require('src/utils');
 const analyticsType = 'endpoint';
 const analyticsName = 'PubWise Analytics:';
 let defaultUrl = 'https://api.pubwise.io/api/v5/event/default/';
-let pubwiseVersion = '3.0.5';
+let pubwiseVersion = '3.0.61';
 let configOptions = {site: '', endpoint: defaultUrl, debug: ''};
 let pwAnalyticsEnabled = false;
 let utmKeys = {utm_source: '', utm_medium: '', utm_campaign: '', utm_term: '', utm_content: ''};
@@ -169,12 +169,23 @@ function flushEvents() {
 }
 
 function isIngestedEvent(eventType) {
-  const ingested = [CONSTANTS.EVENTS.AUCTION_INIT, CONSTANTS.EVENTS.BID_REQUESTED, CONSTANTS.EVENTS.BID_RESPONSE, CONSTANTS.EVENTS.BID_WON, CONSTANTS.EVENTS.BID_TIMEOUT];
+  const ingested = [CONSTANTS.EVENTS.AUCTION_INIT, CONSTANTS.EVENTS.BID_REQUESTED, CONSTANTS.EVENTS.BID_RESPONSE, CONSTANTS.EVENTS.NO_BID, CONSTANTS.EVENTS.BID_WON, CONSTANTS.EVENTS.BID_TIMEOUT];
   if (ingested.includes(eventType)) {
     return true;
   } else {
     return false;
   }
+}
+
+function filterNoBid(data) {
+  let newNoBidData = {};
+
+  newNoBidData.auctionId = data.auctionId;
+  newNoBidData.bidId = data.bidId;
+  newNoBidData.bidderRequestId = data.bidderRequestId;
+  newNoBidData.transactionId = data.transactionId;
+
+  return newNoBidData;
 }
 
 function filterBidResponse(data) {
@@ -196,6 +207,7 @@ function filterBidResponse(data) {
   if (typeof data.statusMessage !== 'undefined' && data.statusMessage === 'Bid returned empty or error response') {
     modified.statusMessage = 'eoe';
   }
+  modified.auctionEnded = auctionEnded;
   return modified;
 }
 
@@ -207,10 +219,10 @@ let pubwiseAnalytics = Object.assign(adapter({defaultUrl, analyticsType}), {
 });
 
 pubwiseAnalytics.handleEvent = function(eventType, data) {
-  utils.logInfo(`${analyticsName} Emitting Event ${eventType} ${pwAnalyticsEnabled}`, data);
-
   // we log most events, but some are information
   if (isIngestedEvent(eventType)) {
+    utils.logInfo(`${analyticsName} Emitting Event ${eventType} ${pwAnalyticsEnabled}`, data);
+
     // add data on init to the metadata container
     if (eventType == CONSTANTS.EVENTS.AUCTION_INIT) {
       // record metadata
@@ -222,9 +234,9 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
       metaData = enrichWithCustomSegments(metaData);
       metaData = enrichWithMetrics(metaData);
       metaData = enrichWithUTM(metaData);
-    }
-
-    if (eventType == CONSTANTS.EVENTS.BID_RESPONSE) {
+    } else if (eventType == CONSTANTS.EVENTS.NO_BID) {
+      data = filterNoBid(data);
+    } else if (eventType == CONSTANTS.EVENTS.BID_RESPONSE) {
       data = filterBidResponse(data);
     }
 
@@ -233,13 +245,15 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
       eventType: eventType,
       args: data
     });
+  } else {
+    utils.logInfo(`${analyticsName} Skipping Event ${eventType} ${pwAnalyticsEnabled}`, data);
   }
 
   if (eventType == CONSTANTS.EVENTS.AUCTION_END) {
     auctionEnded = true;
   }
 
-  if (eventType == CONSTANTS.EVENTS.SET_TARGETING || eventType == CONSTANTS.EVENTS.BID_WON || auctionEnded === true) {
+  if (eventType == CONSTANTS.EVENTS.AUCTION_END || eventType == CONSTANTS.EVENTS.BID_WON || auctionEnded === true) {
     // we consider auction_end to to be the end of the auction
     flushEvents();
   }
