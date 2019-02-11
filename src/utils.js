@@ -81,7 +81,6 @@ export function getUniqueIdentifierStr() {
  * where each x is replaced with a random hexadecimal digit from 0 to f,
  * and y is replaced with a random hexadecimal digit from 8 to b.
  * https://gist.github.com/jed/982883 via node-uuid
- * randomSource is derived from crypto API if available
  */
 export function generateUUID(placeholder) {
   return placeholder

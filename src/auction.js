@@ -129,7 +129,6 @@ export function newAuction({adUnits, adUnitCodes, callback, cbTimeout, labels}) 
   function startAuctionTimer() {
     const timedOut = true;
     const timeoutCallback = executeCallback.bind(null, timedOut);
-    utils.logMessage('PubWise Analytics: Emitting Event', _timeout);
     let timer = setTimeout(timeoutCallback, _timeout);
     _timer = timer;
   }
@@ -139,8 +138,6 @@ export function newAuction({adUnits, adUnitCodes, callback, cbTimeout, labels}) 
     if (cleartimer) {
       clearTimeout(_timer);
     }
-
-    utils.logMessage('PubWise Analytics: Emitting Event', timedOut);
 
     if (_callback != null) {
       let timedOutBidders = [];
