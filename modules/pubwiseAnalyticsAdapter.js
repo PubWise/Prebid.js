@@ -35,9 +35,11 @@ let auctionEnded = false;
 let sessTimeout = 60 * 30 * 1000; // 30 minutes, G Analytics default session length
 let sessName = 'sess_id';
 let sessTimeoutName = 'sess_timeout';
+let flushFailsafe = null;
 
 function markEnabled() {
   utils.logInfo(`${analyticsName} Enabled`, configOptions);
+  flushFailsafe = setTimeout(flushEvents, 1000); // failsafe flush timer set to typical auction length
   pwAnalyticsEnabled = true;
 }
 
@@ -163,32 +165,33 @@ function sessionExpired() {
 
 function flushEvents() {
   if (pwEvents.length > 0) {
-    let localEvents = pwEvents; // get a copy
-    pwEvents = []; // clear the queue
-    let dataBag = {metaData: metaData, eventList: localEvents};
+    let dataBag = {metaData: metaData, eventList: pwEvents.splice(0)}; // put all the events together with the metadata and send
     ajax(configOptions.endpoint, (result) => utils.logInfo(`${analyticsName} Result`, result), JSON.stringify(dataBag));
   }
+  // keep flushing
+  setTimeout(flushEvents, 250); // send every 200 milliseconds after this
+  // failsafe no longer needed
+  clearTimeout(flushFailsafe);
 }
 
 function isIngestedEvent(eventType) {
-  const ingested = [CONSTANTS.EVENTS.AUCTION_INIT, CONSTANTS.EVENTS.BID_REQUESTED, CONSTANTS.EVENTS.BID_RESPONSE, CONSTANTS.EVENTS.NO_BID, CONSTANTS.EVENTS.BID_WON, CONSTANTS.EVENTS.BID_TIMEOUT];
-  if (ingested.includes(eventType)) {
-    return true;
-  } else {
-    return false;
+  const ingested = [CONSTANTS.EVENTS.AUCTION_INIT, CONSTANTS.EVENTS.BID_REQUESTED, CONSTANTS.EVENTS.BID_RESPONSE, CONSTANTS.EVENTS.BID_WON, CONSTANTS.EVENTS.BID_TIMEOUT];
+  return ingested.includes(eventType);
+}
+
+/*
+  // unused currently
+  function filterNoBid(data) {
+    let newNoBidData = {};
+
+    newNoBidData.auctionId = data.auctionId;
+    newNoBidData.bidId = data.bidId;
+    newNoBidData.bidderRequestId = data.bidderRequestId;
+    newNoBidData.transactionId = data.transactionId;
+
+    return newNoBidData;
   }
-}
-
-function filterNoBid(data) {
-  let newNoBidData = {};
-
-  newNoBidData.auctionId = data.auctionId;
-  newNoBidData.bidId = data.bidId;
-  newNoBidData.bidderRequestId = data.bidderRequestId;
-  newNoBidData.transactionId = data.transactionId;
-
-  return newNoBidData;
-}
+*/
 
 function filterBidResponse(data) {
   let modified = Object.assign({}, data);
@@ -264,20 +267,18 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
     utils.logInfo(`${analyticsName} Emitting Event ${eventType} ${pwAnalyticsEnabled}`, data);
 
     // add data on init to the metadata container
-    if (eventType == CONSTANTS.EVENTS.AUCTION_INIT) {
+    if (eventType === CONSTANTS.EVENTS.AUCTION_INIT) {
       // record metadata
       metaData = {
         target_site: configOptions.site,
         debug: configOptions.debug ? 1 : 0,
       };
       metaData = enrichWithSessionInfo(metaData);
-      metaData = enrichWithCustomSegments(metaData);
       metaData = enrichWithMetrics(metaData);
       metaData = enrichWithUTM(metaData);
+      data = enrichWithCustomSegments(data);
       data = filterAuctionInit(data);
-    } else if (eventType == CONSTANTS.EVENTS.NO_BID) {
-      data = filterNoBid(data);
-    } else if (eventType == CONSTANTS.EVENTS.BID_RESPONSE) {
+    } else if (eventType === CONSTANTS.EVENTS.BID_RESPONSE) {
       data = filterBidResponse(data);
     }
 
@@ -290,12 +291,17 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
     utils.logInfo(`${analyticsName} Skipping Event ${eventType} ${pwAnalyticsEnabled}`, data);
   }
 
-  if (eventType == CONSTANTS.EVENTS.AUCTION_END) {
-    auctionEnded = true;
-  }
+  // if (eventType == CONSTANTS.EVENTS.AUCTION_END) {
+  //  auctionEnded = true;
+  // }
 
-  if (eventType == CONSTANTS.EVENTS.AUCTION_END || eventType == CONSTANTS.EVENTS.BID_WON || auctionEnded === true) {
-    // we consider auction_end to to be the end of the auction
+  // if (eventType == CONSTANTS.EVENTS.AUCTION_END || eventType == CONSTANTS.EVENTS.BID_WON || auctionEnded === true) {
+  //  // we consider auction_end to to be the end of the auction
+  //  flushEvents();
+  // }
+
+  // once the auction ends, or the event is a bid won send events
+  if (eventType === CONSTANTS.EVENTS.AUCTION_END || eventType === CONSTANTS.EVENTS.BID_WON) {
     flushEvents();
   }
 }
