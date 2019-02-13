@@ -107,28 +107,30 @@ function expireUtmData() {
 
 function enrichWithCustomSegments(dataBag) {
   // c_site: '', c_script_type: '', c_slot1: '', c_slot2: '', c_slot3: '', c_slot4: ''
-  if (configOptions.c_host) {
-    dataBag['c_host'] = configOptions.c_host;
-  }
+  if (configOptions.custom) {
+    if (configOptions.custom.c_script_type) {
+      dataBag['c_script_type'] = configOptions.custom.c_script_type;
+    }
 
-  if (configOptions.c_script_type) {
-    dataBag['c_script_type'] = configOptions.c_script_type;
-  }
+    if (configOptions.custom.c_test) {
+      dataBag['c_test'] = configOptions.custom.c_test;
+    }
 
-  if (configOptions.c_slot1) {
-    dataBag['c_slot1'] = configOptions.c_slot1;
-  }
+    if (configOptions.custom.c_slot1) {
+      dataBag['c_slot1'] = configOptions.custom.c_slot1;
+    }
 
-  if (configOptions.c_slot2) {
-    dataBag['c_slot2'] = configOptions.c_slot2;
-  }
+    if (configOptions.custom.c_slot2) {
+      dataBag['c_slot2'] = configOptions.custom.c_slot2;
+    }
 
-  if (configOptions.c_slot3) {
-    dataBag['c_slot3'] = configOptions.c_slot3;
-  }
+    if (configOptions.custom.c_slot3) {
+      dataBag['c_slot3'] = configOptions.custom.c_slot3;
+    }
 
-  if (configOptions.c_slot4) {
-    dataBag['c_slot4'] = configOptions.c_slot4;
+    if (configOptions.custom.c_slot4) {
+      dataBag['c_slot4'] = configOptions.custom.c_slot4;
+    }
   }
 
   return dataBag;
@@ -191,23 +193,61 @@ function filterNoBid(data) {
 function filterBidResponse(data) {
   let modified = Object.assign({}, data);
   // clean up some properties we don't track in public version
-  if (typeof data.ad !== 'undefined') {
+  if (typeof modified.ad !== 'undefined') {
     modified.ad = '';
   }
-  if (typeof data.adUrl !== 'undefined') {
+  if (typeof modified.adUrl !== 'undefined') {
     modified.adUrl = '';
   }
-  if (typeof data.adserverTargeting !== 'undefined') {
+  if (typeof modified.adserverTargeting !== 'undefined') {
     modified.adserverTargeting = '';
   }
-  if (typeof data.ts !== 'undefined') {
+  if (typeof modified.ts !== 'undefined') {
     modified.ts = '';
   }
   // clean up a property to make simpler
-  if (typeof data.statusMessage !== 'undefined' && data.statusMessage === 'Bid returned empty or error response') {
+  if (typeof modified.statusMessage !== 'undefined' && modified.statusMessage === 'Bid returned empty or error response') {
     modified.statusMessage = 'eoe';
   }
   modified.auctionEnded = auctionEnded;
+  return modified;
+}
+
+function filterAuctionInit(data) {
+  let modified = Object.assign({}, data);
+
+  modified.refererInfo = {};
+  // handle clean referrer, we only need one
+  if (typeof modified.bidderRequests !== 'undefined') {
+    if (typeof modified.bidderRequests[0] !== 'undefined') {
+      if (typeof modified.bidderRequests[0].refererInfo !== 'undefined') {
+        modified.refererInfo = modified.bidderRequests[0].refererInfo;
+      }
+    }
+  }
+
+  if (typeof modified.adUnitCodes !== 'undefined') {
+    delete modified.adUnitCodes;
+  }
+  if (typeof modified.adUnits !== 'undefined') {
+    delete modified.adUnits;
+  }
+  if (typeof modified.bidderRequests !== 'undefined') {
+    delete modified.bidderRequests;
+  }
+  if (typeof modified.bidsReceived !== 'undefined') {
+    delete modified.bidsReceived;
+  }
+  if (typeof modified.config !== 'undefined') {
+    delete modified.config;
+  }
+  if (typeof modified.noBids !== 'undefined') {
+    delete modified.noBids;
+  }
+  if (typeof modified.winningBids !== 'undefined') {
+    delete modified.winningBids;
+  }
+
   return modified;
 }
 
@@ -234,6 +274,7 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
       metaData = enrichWithCustomSegments(metaData);
       metaData = enrichWithMetrics(metaData);
       metaData = enrichWithUTM(metaData);
+      data = filterAuctionInit(data);
     } else if (eventType == CONSTANTS.EVENTS.NO_BID) {
       data = filterNoBid(data);
     } else if (eventType == CONSTANTS.EVENTS.BID_RESPONSE) {
@@ -277,10 +318,10 @@ pubwiseAnalytics.ensureSession = function () {
 pubwiseAnalytics.adapterEnableAnalytics = pubwiseAnalytics.enableAnalytics;
 
 pubwiseAnalytics.enableAnalytics = function (config) {
-  if (config.options.debug === undefined) {
-    config.options.debug = utils.debugTurnedOn();
-  }
   configOptions = config.options;
+  if (configOptions.debug === undefined) {
+    configOptions.debug = utils.debugTurnedOn();
+  }
   markEnabled();
   this.ensureSession();
   pubwiseAnalytics.adapterEnableAnalytics(config);
