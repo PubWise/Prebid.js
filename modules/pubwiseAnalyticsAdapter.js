@@ -35,13 +35,6 @@ let auctionEnded = false;
 let sessTimeout = 60 * 30 * 1000; // 30 minutes, G Analytics default session length
 let sessName = 'sess_id';
 let sessTimeoutName = 'sess_timeout';
-let flushFailsafe = null;
-
-function markEnabled() {
-  utils.logInfo(`${analyticsName} Enabled`, configOptions);
-  flushFailsafe = setTimeout(flushEvents, 1000); // failsafe flush timer set to typical auction length
-  pwAnalyticsEnabled = true;
-}
 
 function enrichWithSessionInfo(dataBag) {
   try {
@@ -114,8 +107,8 @@ function enrichWithCustomSegments(dataBag) {
       dataBag['c_script_type'] = configOptions.custom.c_script_type;
     }
 
-    if (configOptions.custom.c_test) {
-      dataBag['c_test'] = configOptions.custom.c_test;
+    if (configOptions.custom.c_host) {
+      dataBag['c_host'] = configOptions.custom.c_host;
     }
 
     if (configOptions.custom.c_slot1) {
@@ -168,15 +161,17 @@ function flushEvents() {
     let dataBag = {metaData: metaData, eventList: pwEvents.splice(0)}; // put all the events together with the metadata and send
     ajax(configOptions.endpoint, (result) => utils.logInfo(`${analyticsName} Result`, result), JSON.stringify(dataBag));
   }
-  // keep flushing
-  setTimeout(flushEvents, 250); // send every 200 milliseconds after this
-  // failsafe no longer needed
-  clearTimeout(flushFailsafe);
 }
 
 function isIngestedEvent(eventType) {
   const ingested = [CONSTANTS.EVENTS.AUCTION_INIT, CONSTANTS.EVENTS.BID_REQUESTED, CONSTANTS.EVENTS.BID_RESPONSE, CONSTANTS.EVENTS.BID_WON, CONSTANTS.EVENTS.BID_TIMEOUT];
   return ingested.includes(eventType);
+}
+
+function markEnabled() {
+  utils.logInfo(`${analyticsName} Enabled`, configOptions);
+  pwAnalyticsEnabled = true;
+  setInterval(flushEvents, 400);
 }
 
 /*
