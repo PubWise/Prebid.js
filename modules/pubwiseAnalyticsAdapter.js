@@ -21,7 +21,7 @@ const utils = require('../src/utils');
 */
 
 const analyticsType = 'endpoint';
-const analyticsName = 'PubWise Analytics:';
+const analyticsName = 'PubWise:';
 let defaultUrl = 'https://api.pubwise.io/api/v5/event/default/';
 let pubwiseVersion = '3.0.61';
 let configOptions = {site: '', endpoint: defaultUrl, debug: ''};
@@ -87,14 +87,14 @@ function enrichWithUTM(dataBag) {
       }
     }
   } catch (e) {
-    utils.logInfo(`${analyticsName} Error`, e);
+    pwInfo(`Error`, e);
     dataBag['error_utm'] = 1;
   }
   return dataBag;
 }
 
 function expireUtmData() {
-  utils.logInfo(`${analyticsName} Session Expiring UTM Data`);
+  pwInfo(`Session Expiring UTM Data`);
   for (let prop in utmKeys) {
     localStorage.removeItem(setNamespace(prop));
   }
@@ -159,7 +159,7 @@ function sessionExpired() {
 function flushEvents() {
   if (pwEvents.length > 0) {
     let dataBag = {metaData: metaData, eventList: pwEvents.splice(0)}; // put all the events together with the metadata and send
-    ajax(configOptions.endpoint, (result) => utils.logInfo(`${analyticsName} Result`, result), JSON.stringify(dataBag));
+    ajax(configOptions.endpoint, (result) => pwInfo(`Result`, result), JSON.stringify(dataBag));
   }
 }
 
@@ -169,9 +169,13 @@ function isIngestedEvent(eventType) {
 }
 
 function markEnabled() {
-  utils.logInfo(`${analyticsName} Enabled`, configOptions);
+  pwInfo(`Enabled`, configOptions);
   pwAnalyticsEnabled = true;
   setInterval(flushEvents, 400);
+}
+
+function pwInfo(info, context) {
+  utils.logInfo(`${analyticsName} ` + info, context);
 }
 
 /*
@@ -259,19 +263,20 @@ let pubwiseAnalytics = Object.assign(adapter({defaultUrl, analyticsType}), {
 pubwiseAnalytics.handleEvent = function(eventType, data) {
   // we log most events, but some are information
   if (isIngestedEvent(eventType)) {
-    utils.logInfo(`${analyticsName} Emitting Event ${eventType} ${pwAnalyticsEnabled}`, data);
+    pwInfo(`Emitting Event ${eventType} ${pwAnalyticsEnabled}`, data);
+
+    // record metadata
+    metaData = {
+      target_site: configOptions.site,
+      debug: configOptions.debug ? 1 : 0,
+    };
+    metaData = enrichWithSessionInfo(metaData);
+    metaData = enrichWithMetrics(metaData);
+    metaData = enrichWithUTM(metaData);
+    metaData = enrichWithCustomSegments(metaData);
 
     // add data on init to the metadata container
     if (eventType === CONSTANTS.EVENTS.AUCTION_INIT) {
-      // record metadata
-      metaData = {
-        target_site: configOptions.site,
-        debug: configOptions.debug ? 1 : 0,
-      };
-      metaData = enrichWithSessionInfo(metaData);
-      metaData = enrichWithMetrics(metaData);
-      metaData = enrichWithUTM(metaData);
-      data = enrichWithCustomSegments(data);
       data = filterAuctionInit(data);
     } else if (eventType === CONSTANTS.EVENTS.BID_RESPONSE) {
       data = filterBidResponse(data);
@@ -283,7 +288,7 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
       args: data
     });
   } else {
-    utils.logInfo(`${analyticsName} Skipping Event ${eventType} ${pwAnalyticsEnabled}`, data);
+    pwInfo(`Skipping Event ${eventType} ${pwAnalyticsEnabled}`, data);
   }
 
   // if (eventType == CONSTANTS.EVENTS.AUCTION_END) {
@@ -303,7 +308,7 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
 
 pubwiseAnalytics.storeSessionID = function (userSessID) {
   localStorage.setItem(localStorageSessName(), userSessID);
-  utils.logInfo(`${analyticsName} New Session Generated`, userSessID);
+  pwInfo(`New Session Generated`, userSessID);
 };
 
 // ensure a session exists, if not make one, always store it

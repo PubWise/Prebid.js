@@ -456,7 +456,7 @@ $$PREBID_GLOBAL$$.requestBids = hook('async', function ({ bidsBackHandler, timeo
   });
 
   if (!adUnits || adUnits.length === 0) {
-    utils.logMessage('No adUnits configured. No bids requested.');
+    utils.logMessage('No adUnits configured. No bids requested.', adUnitCodes);
     if (typeof bidsBackHandler === 'function') {
       // executeCallback, this will only be called in case of first request
       try {
