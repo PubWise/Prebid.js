@@ -23,7 +23,7 @@ const utils = require('../src/utils');
 const analyticsType = 'endpoint';
 const analyticsName = 'PubWise:';
 let defaultUrl = 'https://api.pubwise.io/api/v5/event/default/';
-let pubwiseVersion = '3.0.90';
+let pubwiseVersion = '3.0.91';
 let configOptions = {site: '', endpoint: defaultUrl, debug: ''};
 let pwAnalyticsEnabled = false;
 let utmKeys = {utm_source: '', utm_medium: '', utm_campaign: '', utm_term: '', utm_content: ''};
@@ -171,7 +171,7 @@ function isIngestedEvent(eventType) {
 function markEnabled() {
   pwInfo(`Enabled`, configOptions);
   pwAnalyticsEnabled = true;
-  setInterval(flushEvents, 400);
+  setInterval(flushEvents, 100);
 }
 
 function pwInfo(info, context) {
@@ -290,15 +290,6 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
   } else {
     pwInfo(`Skipping Event ${eventType} ${pwAnalyticsEnabled}`, data);
   }
-
-  // if (eventType == CONSTANTS.EVENTS.AUCTION_END) {
-  //  auctionEnded = true;
-  // }
-
-  // if (eventType == CONSTANTS.EVENTS.AUCTION_END || eventType == CONSTANTS.EVENTS.BID_WON || auctionEnded === true) {
-  //  // we consider auction_end to to be the end of the auction
-  //  flushEvents();
-  // }
 
   // once the auction ends, or the event is a bid won send events
   if (eventType === CONSTANTS.EVENTS.AUCTION_END || eventType === CONSTANTS.EVENTS.BID_WON) {
