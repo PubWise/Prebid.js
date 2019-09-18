@@ -2,7 +2,7 @@ steps:
 - name: 'gcr.io/cloud-builders/npm'
   args: ['install']
 - name: 'gcr.io/cloud-builders/npm'
-  args: ['run gulp build --modules=aolBidAdapter,rhythmoneBidAdapter,mantisBidAdapter,trafficrootsBidAdapter,gumgumBidAdapter,33acrossBidAdapter,undertoneBidAdapter,districtmDMXBidAdapter,appnexusBidAdapter,openxBidAdapter,ixBidAdapter,rubiconBidAdapter,rubiconBidAdapter,pubmaticBidAdapter,sovrnBidAdapter,pulsepointBidAdapter,emx_digitalBidAdapter,conversantBidAdapter,aardvarkBidAdapter,lockerdomeBidAdapter,pubwiseAnalyticsAdapter,consentManagement']
+  args: ['run', 'gulp build --modules=aolBidAdapter,rhythmoneBidAdapter,mantisBidAdapter,trafficrootsBidAdapter,gumgumBidAdapter,33acrossBidAdapter,undertoneBidAdapter,districtmDMXBidAdapter,appnexusBidAdapter,openxBidAdapter,ixBidAdapter,rubiconBidAdapter,rubiconBidAdapter,pubmaticBidAdapter,sovrnBidAdapter,pulsepointBidAdapter,emx_digitalBidAdapter,conversantBidAdapter,aardvarkBidAdapter,lockerdomeBidAdapter,pubwiseAnalyticsAdapter,consentManagement']
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args: ['-c', 'gsutil cp -r dist/* gs://pwbuilds-artifacts']
