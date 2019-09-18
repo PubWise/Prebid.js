@@ -6,6 +6,7 @@ steps:
 - name: 'ubuntu'
   args: ['ls']
 - name: 'ubuntu'
+  entrypoint: /bin/bash
   args: ['cd node_modules']
 - name: 'ubuntu'
   args: ['ls']
