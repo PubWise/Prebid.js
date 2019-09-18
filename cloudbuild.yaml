@@ -4,6 +4,7 @@ steps:
 - name: 'ubuntu'
   args: ['pwd']
 - name: 'ubuntu'
+  entrypoint: /bin/bash
   args: ['ls']
 - name: 'ubuntu'
   entrypoint: /bin/bash
