@@ -2,7 +2,7 @@ steps:
 - name: 'gcr.io/cloud-builders/npm'
   args: ['install']
 - name: 'ubuntu'
-  args: ['bash', './node_modules/gulp/bin/gulp.js build']
+  args: ['bash', '/workspace/node_modules/gulp/bin/gulp.js build']
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args: ['-c', 'gsutil cp -r dist/* gs://pwbuilds-artifacts']
