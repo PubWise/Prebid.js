@@ -2,9 +2,9 @@ steps:
 - name: 'gcr.io/cloud-builders/npm'
   args: ['install']
 - name: 'ubuntu'
-  args: ['bash', 'pwd']
+  args: ['pwd']
 - name: 'ubuntu'
-  args: ['bash', 'ls']
+  args: ['ls']
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args: ['-c', 'gsutil cp -r dist/* gs://pwbuilds-artifacts']
