@@ -6,7 +6,7 @@ steps:
 - name: 'ubuntu'
   args: ['ls']
 - name: 'ubuntu'
-  args: ['cd','node_modules']
+  args: ['cd node_modules']
 - name: 'ubuntu'
   args: ['ls']
 - name: 'ubuntu'
