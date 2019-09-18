@@ -1,8 +1,6 @@
 steps:
 - name: 'gcr.io/cloud-builders/npm'
   args: ['install']
-- name: 'gcr.io/cloud-builders/npm'
-  args: ['run', 'build']
 - name: 'ubuntu'
   args: ['bash', './node_modules/gulp/bin/gulp.js build']
 - name: 'gcr.io/cloud-builders/gcloud'
