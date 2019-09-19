@@ -2,7 +2,11 @@ steps:
 - name: 'gcr.io/cloud-builders/npm'
   args: ['install']
 - name: 'gcr.io/cloud-builders/npm'
-  args: ['run', 'gulp', 'build', '--modules=aolBidAdapter,rhythmoneBidAdapter,mantisBidAdapter,trafficrootsBidAdapter,gumgumBidAdapter,33acrossBidAdapter,undertoneBidAdapter,districtmDMXBidAdapter,appnexusBidAdapter,openxBidAdapter,ixBidAdapter,rubiconBidAdapter,rubiconBidAdapter,pubmaticBidAdapter,sovrnBidAdapter,pulsepointBidAdapter,emx_digitalBidAdapter,conversantBidAdapter,aardvarkBidAdapter,lockerdomeBidAdapter,pubwiseAnalyticsAdapter,consentManagement']
+  args: ['run', 'gulp', 'build', '--modules=${_PB_MODULES}']
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
-  args: ['-c', 'gsutil cp -r build/dist/prebid.js gs://pwbuilds-artifacts']
+  args: ['-c', 'gsutil cp -r build/dist/prebid.js gs://pwbuilds-artifacts/prebid/${_SITE_ID}/${_TYPE}/']
+substitutions:
+  _PB_MODULES: appnexusBidAdapter,pubwiseAnalyticsAdapter,consentManagement
+  _TYPE: default
+  _SITE_ID: 0
