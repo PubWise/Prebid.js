@@ -2,11 +2,16 @@ steps:
 - name: 'gcr.io/cloud-builders/npm'
   args: ['install']
 - name: 'gcr.io/cloud-builders/npm'
-  args: ['run', 'gulp', 'build', '--modules=${_PB_MODULES}']
+  args: ['run', 'gulp', 'build', '--modules=${_PB_MODULES}${_PB_MODULES2}${_PB_MODULES3}${_PB_MODULES4}']
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args: ['-c', 'gsutil cp -r build/dist/prebid.js gs://pwbuilds-artifacts/prebid/${_SITE_ID}/${_TYPE}/']
 substitutions:
-  _PB_MODULES: 'appnexusBidAdapter,pubwiseAnalyticsAdapter,consentManagement'
+  _PB_MODULES: 'appnexusBidAdapter'
+  _PB_MODULES2: ',pubwiseAnalyticsAdapter'
+  _PB_MODULES3: ',consentManagement'
+  _PB_MODULES4: ''
   _TYPE: 'default'
   _SITE_ID: '0'
+options:
+    substitution_option: 'ALLOW_LOOSE'
