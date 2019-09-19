@@ -7,6 +7,6 @@ steps:
   entrypoint: 'bash'
   args: ['-c', 'gsutil cp -r build/dist/prebid.js gs://pwbuilds-artifacts/prebid/${_SITE_ID}/${_TYPE}/']
 substitutions:
-  _PB_MODULES: appnexusBidAdapter,pubwiseAnalyticsAdapter,consentManagement
-  _TYPE: default
-  _SITE_ID: 0
+  _PB_MODULES: 'appnexusBidAdapter,pubwiseAnalyticsAdapter,consentManagement'
+  _TYPE: 'default'
+  _SITE_ID: '0'
