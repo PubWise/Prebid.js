@@ -1,8 +1,8 @@
-import {ajax} from '../src/ajax';
-import adapter from '../src/AnalyticsAdapter';
-import adapterManager from '../src/adapterManager';
+import {ajax} from '../src/ajax.js';
+import adapter from '../src/AnalyticsAdapter.js';
+import adapterManager from '../src/adapterManager.js';
+import {getStorageManager} from '../src/storageManager.js';
 import CONSTANTS from '../src/constants.json';
-const utils = require('../src/utils');
 
 /****
  * PubWise.io Analytics
@@ -15,15 +15,17 @@ const utils = require('../src/utils');
   provider: 'pubwise',
   options: {
     site: 'test-test-test-test',
-    endpoint: 'https://api.pubwise.io/api/v4/event/add/',
+    endpoint: 'https://api.pubwise.io/api/v5/event/default/',
   }
  });
 */
 
 const analyticsType = 'endpoint';
 const analyticsName = 'PubWise:';
+const storage = getStorageManager();
+const utils = require('../src/utils.js');
 let defaultUrl = 'https://api.pubwise.io/api/v5/event/default/';
-let pubwiseVersion = '3.0.91';
+let pubwiseVersion = '3.0.92';
 let configOptions = {site: '', endpoint: defaultUrl, debug: ''};
 let pwAnalyticsEnabled = false;
 let utmKeys = {utm_source: '', utm_medium: '', utm_campaign: '', utm_term: '', utm_content: ''};
@@ -49,6 +51,7 @@ function enrichWithSessionInfo(dataBag) {
 function enrichWithMetrics(dataBag) {
   try {
     if (typeof PREBID_TIMEOUT !== 'undefined') {
+      /* global PREBID_TIMEOUT */
       dataBag['target_timeout'] = PREBID_TIMEOUT;
     } else {
       dataBag['target_timeout'] = 'NA';
@@ -76,14 +79,14 @@ function enrichWithUTM(dataBag) {
 
     if (newUtm === false) {
       for (let prop in utmKeys) {
-        let itemValue = localStorage.getItem(setNamespace(prop));
+        let itemValue = storage.getDataFromLocalStorage(setNamespace(prop));
         if (itemValue !== null && typeof itemValue !== 'undefined' && itemValue.length !== 0) {
           dataBag[prop] = itemValue;
         }
       }
     } else {
       for (let prop in utmKeys) {
-        localStorage.setItem(setNamespace(prop), utmKeys[prop]);
+        storage.setDataInLocalStorage(setNamespace(prop), utmKeys[prop]);
       }
     }
   } catch (e) {
@@ -96,7 +99,7 @@ function enrichWithUTM(dataBag) {
 function expireUtmData() {
   pwInfo(`Session Expiring UTM Data`);
   for (let prop in utmKeys) {
-    localStorage.removeItem(setNamespace(prop));
+    storage.removeDataFromLocalStorage(setNamespace(prop));
   }
 }
 
@@ -144,15 +147,15 @@ function localStorageSessName() {
 }
 
 function extendUserSessionTimeout() {
-  localStorage.setItem(localStorageSessTimeoutName(), Date.now().toString());
+  storage.setDataInLocalStorage(localStorageSessTimeoutName(), Date.now().toString());
 }
 
 function userSessionID() {
-  return localStorage.getItem(localStorageSessName()) ? localStorage.getItem(localStorageSessName()) : '';
+  return storage.getDataFromLocalStorage(localStorageSessName()) ? storage.getDataFromLocalStorage(localStorageSessName()) : '';
 }
 
 function sessionExpired() {
-  let sessLastTime = localStorage.getItem(localStorageSessTimeoutName());
+  let sessLastTime = storage.getDataFromLocalStorage(localStorageSessTimeoutName());
   return (Date.now() - parseInt(sessLastTime)) > sessTimeout;
 }
 
@@ -298,7 +301,7 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
 }
 
 pubwiseAnalytics.storeSessionID = function (userSessID) {
-  localStorage.setItem(localStorageSessName(), userSessID);
+  storage.setDataInLocalStorage(localStorageSessName(), userSessID);
   pwInfo(`New Session Generated`, userSessID);
 };
 
