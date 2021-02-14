@@ -1,0 +1,33 @@
+/**
+ * This module adds the PubWise.io provider to the Real Time Data module (rtdModule)
+ * The {@link module:modules/realTimeData} module is required
+ * The module allows page level traffic quality assessments as well as audience ad targeting information
+ * @requires module:modules/realTimeData
+ */
+
+import { submodule } from '../src/hook.js';
+let trafficAssessment = 0;
+
+function init(provider, userConsent) {
+  trafficAssessment = 0;
+  return true;
+}
+
+function processAuctionInit(auctionDetails, config, userConsent) {
+  if (trafficAssessment == 1) {
+    /* eslint-disable no-console */
+    console.log('rtd auction ', auctionDetails);
+    /* eslint-disable no-console */
+    console.log('rtd config ', config);
+    /* eslint-disable no-console */
+    console.log('rtd consent ', userConsent);
+  }
+}
+
+export const pubwiseRtdSubmodule = {
+  name: 'PubWiseRTDModule',
+  init: init,
+  onAuctionInitEvent: processAuctionInit
+};
+
+submodule('realTimeData', pubwiseRtdSubmodule);
