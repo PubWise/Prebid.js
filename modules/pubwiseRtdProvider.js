@@ -9,6 +9,8 @@ import { submodule } from '../src/hook.js';
 let trafficAssessment = 0;
 
 function init(provider, userConsent) {
+  /* eslint-disable no-console */
+  console.log('pubwise rtd loaded')
   trafficAssessment = 0;
   return true;
 }
@@ -25,7 +27,7 @@ function processAuctionInit(auctionDetails, config, userConsent) {
 }
 
 export const pubwiseRtdSubmodule = {
-  name: 'PubWiseRTDModule',
+  name: 'pubwise',
   init: init,
   onAuctionInitEvent: processAuctionInit
 };
