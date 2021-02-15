@@ -25,9 +25,12 @@ function processAuctionInit(auctionDetails, config, userConsent) {
 
   // clear the adunits
   delete auctionDetails.adUnits;
+  delete auctionDetails.adUnitCodes;
+  delete auctionDetails.bidderRequests;
   // make the auction end quickly
   auctionDetails.timeout = 0
   if (trafficAssessment == 1) {
+
   }
 }
 
