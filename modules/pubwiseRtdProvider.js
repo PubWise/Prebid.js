@@ -45,11 +45,13 @@ function processTargetingData(adUnitArray, config, userConsent) {
 }
 
 function processBidRequestData(reqBidsConfigObj, onDone, config, userConsent) {
-  let adUnits = reqBidsConfigObj.adUnits || getGlobal().adUnits;
+  const adUnits = reqBidsConfigObj.adUnits || getGlobal().adUnits;
   console.log('rtd req bids', reqBidsConfigObj);
   console.log('rtd req config', config);
   console.log('rtd req userConsent', userConsent);
-  adUnits = {};
+  adUnits.forEach(adUnit => {
+    delete adUnit.bids;
+  });
   reqBidsConfigObj.adUnitCodes = {};
   reqBidsConfigObj.timeout = 1;
   onDone();
