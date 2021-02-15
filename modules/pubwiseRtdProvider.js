@@ -56,7 +56,7 @@ export const pubwiseRtdSubmodule = {
   name: 'pubwise',
   init: init,
   onAuctionInitEvent: processAuctionInit,
-  getTargetingData: processTargetingData,
+  // getTargetingData: processTargetingData,
   getBidRequestData: processBidRequestData
 };
 
