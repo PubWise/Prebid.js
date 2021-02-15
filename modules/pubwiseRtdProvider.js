@@ -16,13 +16,14 @@ function init(provider, userConsent) {
 }
 
 function processAuctionInit(auctionDetails, config, userConsent) {
+  /* eslint-disable no-console */
+  console.log('rtd auction ', auctionDetails);
+  /* eslint-disable no-console */
+  console.log('rtd config ', config);
+  /* eslint-disable no-console */
+  console.log('rtd consent ', userConsent);
+
   if (trafficAssessment == 1) {
-    /* eslint-disable no-console */
-    console.log('rtd auction ', auctionDetails);
-    /* eslint-disable no-console */
-    console.log('rtd config ', config);
-    /* eslint-disable no-console */
-    console.log('rtd consent ', userConsent);
   }
 }
 
