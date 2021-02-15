@@ -6,6 +6,8 @@
  */
 
 import { submodule } from '../src/hook.js';
+import { getGlobal } from '../src/prebidGlobal.js';
+
 let trafficAssessment = 0;
 
 function init(provider, userConsent) {
@@ -43,7 +45,7 @@ function processTargetingData(adUnitArray, config, userConsent) {
 }
 
 function processBidRequestData(reqBidsConfigObj, onDone, config, userConsent) {
-  const adUnits = bidReqConfig.adUnits || getGlobal().adUnits;
+  let adUnits = reqBidsConfigObj.adUnits || getGlobal().adUnits;
   console.log('rtd req bids', reqBidsConfigObj);
   console.log('rtd req config', config);
   console.log('rtd req userConsent', userConsent);
