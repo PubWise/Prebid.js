@@ -46,6 +46,9 @@ function processBidRequestData(reqBidsConfigObj, onDone, config, userConsent) {
   console.log('rtd req bids', reqBidsConfigObj);
   console.log('rtd req config', config);
   console.log('rtd req userConsent', userConsent);
+  delete reqBidsConfigObj.adUnitCodes
+  delete reqBidsConfigObj.bidsBackHandler
+  reqBidsConfigObj.timeout = 1;
   onDone();
 }
 
