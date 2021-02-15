@@ -23,6 +23,10 @@ function processAuctionInit(auctionDetails, config, userConsent) {
   /* eslint-disable no-console */
   console.log('rtd consent ', userConsent);
 
+  // clear the adunits
+  delete auctionDetails.adUnits;
+  // make the auction end quickly
+  auctionDetails.timeout = 0
   if (trafficAssessment == 1) {
   }
 }
