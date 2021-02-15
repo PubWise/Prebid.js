@@ -5,63 +5,96 @@
  * @requires module:modules/realTimeData
  */
 
+import * as utils from '../src/utils.js';
 import { submodule } from '../src/hook.js';
 import { getGlobal } from '../src/prebidGlobal.js';
+import { ajaxBuilder } from '../src/ajax.js';
 
-let trafficAssessment = 0;
+let _moduleParams = {};
+let _assessmentData = {quality: {result: 0}};
 
 function init(provider, userConsent) {
-  /* eslint-disable no-console */
-  console.log('pubwise rtd loaded')
-  trafficAssessment = 0;
+  const win = window.top;
+  const doc = win.document;
+
+  _moduleParams = provider.params;
+  if (_moduleParams && _moduleParams.siteId) {
+    let paramData = {
+      ...{
+        siteId: _moduleParams.siteId,
+        pageUrl: `${doc.location.protocol}//${doc.location.host}${doc.location.pathname}`,
+      },
+      ...(document.referrer ? {r: document.referrer} : {}),
+      ...(document.title ? {at: document.title} : {})
+    };
+    getAssessment(`${_moduleParams.endpoint}/traffic/quality/?${toUrlParams(paramData)}`);
+  } else {
+    utils.logError('missing params for PubWise audience rtd module');
+  }
   return true;
 }
 
-function processAuctionInit(auctionDetails, config, userConsent) {
-  // /* eslint-disable no-console */
-  // console.log('rtd auction ', auctionDetails);
-  // /* eslint-disable no-console */
-  // console.log('rtd config ', config);
-  // /* eslint-disable no-console */
-  // console.log('rtd consent ', userConsent);
-
-  // // clear the adunits
-  // delete auctionDetails.adUnits;
-  // delete auctionDetails.adUnitCodes;
-  // delete auctionDetails.bidderRequests;
-  // // make the auction end quickly
-  // auctionDetails.timeout = 0
-  // if (trafficAssessment == 1) {
-
-  // }
-
-  // return auctionDetails;
+/**
+ * serialize object and return query params string
+ * @param {Object} data
+ * @return {string}
+ */
+function toUrlParams(data) {
+  return Object.keys(data)
+    .map(key => key + '=' + encodeURIComponent(data[key]))
+    .join('&');
 }
 
-function processTargetingData(adUnitArray, config, userConsent) {
-  console.log('rtd req adUnitArray', adUnitArray);
-  console.log('rtd req config', config);
-  console.log('rtd req userConsent', userConsent);
+function getAssessment(url) {
+  let ajax = ajaxBuilder();
+
+  ajax(url,
+    {
+      success: function (response, req) {
+        if (req.status === 200) {
+          try {
+            const data = JSON.parse(response);
+            if (data && data.quality) {
+              setData({quality: data.quality});
+            } else {
+              setData({});
+            }
+          } catch (err) {
+            utils.logError('unable to parse assessment data');
+            setData({})
+          }
+        } else if (req.status === 204) {
+          // unrecognized site key
+          setData({});
+        }
+      },
+      error: function () {
+        setData({});
+        utils.logError('unable to get assessment data');
+      }
+    }
+  );
+}
+
+function setData(data) {
+  _assessmentData = data;
 }
 
 function processBidRequestData(reqBidsConfigObj, onDone, config, userConsent) {
-  const adUnits = reqBidsConfigObj.adUnits || getGlobal().adUnits;
-  console.log('rtd req bids', reqBidsConfigObj);
-  console.log('rtd req config', config);
-  console.log('rtd req userConsent', userConsent);
-  adUnits.forEach(adUnit => {
-    delete adUnit.bids;
-  });
-  reqBidsConfigObj.adUnitCodes = {};
-  reqBidsConfigObj.timeout = 1;
+  if (_assessmentData.quality == 1) {
+    const adUnits = reqBidsConfigObj.adUnits || getGlobal().adUnits;
+    adUnits.forEach(adUnit => {
+      delete adUnit.bids;
+    });
+    reqBidsConfigObj.adUnitCodes = {};
+    reqBidsConfigObj.timeout = 1;
+  }
   onDone();
 }
 
 export const pubwiseRtdSubmodule = {
   name: 'pubwise',
   init: init,
-  onAuctionInitEvent: processAuctionInit,
-  // getTargetingData: processTargetingData,
   getBidRequestData: processBidRequestData
 };
 
