@@ -32,12 +32,29 @@ function processAuctionInit(auctionDetails, config, userConsent) {
   if (trafficAssessment == 1) {
 
   }
+
+  return auctionDetails;
+}
+
+function processTargetingData(adUnitArray, config, userConsent) {
+  console.log('rtd req adUnitArray', adUnitArray);
+  console.log('rtd req config', config);
+  console.log('rtd req userConsent', userConsent);
+}
+
+function processBidRequestData(reqBidsConfigObj, onDone, config, userConsent) {
+  console.log('rtd req bids', reqBidsConfigObj);
+  console.log('rtd req config', config);
+  console.log('rtd req userConsent', userConsent);
+  onDone();
 }
 
 export const pubwiseRtdSubmodule = {
   name: 'pubwise',
   init: init,
-  onAuctionInitEvent: processAuctionInit
+  onAuctionInitEvent: processAuctionInit,
+  getTargetingData: processTargetingData,
+  getBidRequestData: processBidRequestData
 };
 
 submodule('realTimeData', pubwiseRtdSubmodule);
