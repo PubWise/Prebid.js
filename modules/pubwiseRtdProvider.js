@@ -16,24 +16,24 @@ function init(provider, userConsent) {
 }
 
 function processAuctionInit(auctionDetails, config, userConsent) {
-  /* eslint-disable no-console */
-  console.log('rtd auction ', auctionDetails);
-  /* eslint-disable no-console */
-  console.log('rtd config ', config);
-  /* eslint-disable no-console */
-  console.log('rtd consent ', userConsent);
+  // /* eslint-disable no-console */
+  // console.log('rtd auction ', auctionDetails);
+  // /* eslint-disable no-console */
+  // console.log('rtd config ', config);
+  // /* eslint-disable no-console */
+  // console.log('rtd consent ', userConsent);
 
-  // clear the adunits
-  delete auctionDetails.adUnits;
-  delete auctionDetails.adUnitCodes;
-  delete auctionDetails.bidderRequests;
-  // make the auction end quickly
-  auctionDetails.timeout = 0
-  if (trafficAssessment == 1) {
+  // // clear the adunits
+  // delete auctionDetails.adUnits;
+  // delete auctionDetails.adUnitCodes;
+  // delete auctionDetails.bidderRequests;
+  // // make the auction end quickly
+  // auctionDetails.timeout = 0
+  // if (trafficAssessment == 1) {
 
-  }
+  // }
 
-  return auctionDetails;
+  // return auctionDetails;
 }
 
 function processTargetingData(adUnitArray, config, userConsent) {
@@ -43,11 +43,12 @@ function processTargetingData(adUnitArray, config, userConsent) {
 }
 
 function processBidRequestData(reqBidsConfigObj, onDone, config, userConsent) {
+  const adUnits = bidReqConfig.adUnits || getGlobal().adUnits;
   console.log('rtd req bids', reqBidsConfigObj);
   console.log('rtd req config', config);
   console.log('rtd req userConsent', userConsent);
-  delete reqBidsConfigObj.adUnitCodes
-  delete reqBidsConfigObj.bidsBackHandler
+  adUnits = {};
+  reqBidsConfigObj.adUnitCodes = {};
   reqBidsConfigObj.timeout = 1;
   onDone();
 }
