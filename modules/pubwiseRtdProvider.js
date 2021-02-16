@@ -57,19 +57,19 @@ function getAssessment(url) {
             if (data && data.Quality) {
               setData({Quality: data.Quality});
             } else {
-              setData({});
+              setData({Quality: {Result: 0}});
             }
           } catch (err) {
             utils.logError('unable to parse assessment data');
-            setData({})
+            setData({Quality: {Result: 0}})
           }
         } else if (req.status === 204) {
           // unrecognized site key
-          setData({});
+          setData({Quality: {Result: 0}});
         }
       },
       error: function () {
-        setData({});
+        setData({Quality: {Result: 0}});
         utils.logError('unable to get assessment data');
       }
     }
@@ -81,8 +81,7 @@ function setData(data) {
 }
 
 function processBidRequestData(reqBidsConfigObj, onDone, config, userConsent) {
-  /* eslint-disable-next-line no-console */
-  console.log('Assessment Data', _assessmentData)
+  utils.logInfo('Assessment Data', _assessmentData)
   if (_assessmentData.Quality && _assessmentData.Quality.Result && _assessmentData.Quality.Result == 1) {
     const adUnits = reqBidsConfigObj.adUnits || getGlobal().adUnits;
     adUnits.forEach(adUnit => {
