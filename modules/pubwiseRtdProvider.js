@@ -81,7 +81,7 @@ function setData(data) {
 }
 
 function processBidRequestData(reqBidsConfigObj, onDone, config, userConsent) {
-  if (_assessmentData.quality == 1) {
+  if (_assessmentData.quality && _assessmentData.quality.result && _assessmentData.result == 1) {
     const adUnits = reqBidsConfigObj.adUnits || getGlobal().adUnits;
     adUnits.forEach(adUnit => {
       delete adUnit.bids;
