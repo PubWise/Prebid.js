@@ -11,7 +11,7 @@ import { getGlobal } from '../src/prebidGlobal.js';
 import { ajaxBuilder } from '../src/ajax.js';
 
 let _moduleParams = {};
-let _assessmentData = {quality: {result: 0}};
+let _assessmentData = {Quality: {Result: 0}};
 
 function init(provider, userConsent) {
   const win = window.top;
@@ -54,8 +54,8 @@ function getAssessment(url) {
         if (req.status === 200) {
           try {
             const data = JSON.parse(response);
-            if (data && data.quality) {
-              setData({quality: data.quality});
+            if (data && data.Quality) {
+              setData({Quality: data.Quality});
             } else {
               setData({});
             }
