@@ -30,6 +30,7 @@
     "browsiRtdProvider",
     "haloRtdProvider",
     "jwplayerRtdProvider",
+    "pubwiseRtdProvider",
     "reconciliationRtdProvider",
     "geoedgeRtdProvider"
   ]
