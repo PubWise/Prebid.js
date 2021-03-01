@@ -12,6 +12,7 @@ import { ajaxBuilder } from '../src/ajax.js';
 
 let _moduleParams = {};
 let _assessmentData = {Quality: {Result: 0}};
+const LogPrepend = 'PubWise: ';
 
 function init(provider, userConsent) {
   const win = window.top;
@@ -29,7 +30,7 @@ function init(provider, userConsent) {
     };
     getAssessment(`${_moduleParams.endpoint}/traffic/quality/?${toUrlParams(paramData)}`);
   } else {
-    utils.logError('missing params for PubWise audience rtd module');
+    utils.logError(LogPrepend + 'missing params for PubWise audience rtd module');
   }
   return true;
 }
@@ -60,7 +61,7 @@ function getAssessment(url) {
               setData({Quality: {Result: 0}});
             }
           } catch (err) {
-            utils.logError('unable to parse assessment data');
+            utils.logError(LogPrepend + 'unable to parse assessment data');
             setData({Quality: {Result: 0}})
           }
         } else if (req.status === 204) {
@@ -70,7 +71,7 @@ function getAssessment(url) {
       },
       error: function () {
         setData({Quality: {Result: 0}});
-        utils.logError('unable to get assessment data');
+        utils.logError(LogPrepend + 'unable to get assessment data');
       }
     }
   );
@@ -81,7 +82,7 @@ function setData(data) {
 }
 
 function processBidRequestData(reqBidsConfigObj, onDone, config, userConsent) {
-  utils.logInfo('Assessment Data', _assessmentData)
+  utils.logInfo(LogPrepend + 'Assessment Data', _assessmentData)
   if (_assessmentData.Quality && _assessmentData.Quality.Result && _assessmentData.Quality.Result == 1) {
     const adUnits = reqBidsConfigObj.adUnits || getGlobal().adUnits;
     adUnits.forEach(adUnit => {
