@@ -259,6 +259,8 @@ function filterBidRequested(data) {
     delete modified.gdprConsent; // not tracking through this channel currently
   }
 
+  modified.gdprConsent = {};
+
   return modified;
 }
 
