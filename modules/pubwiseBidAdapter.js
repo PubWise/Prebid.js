@@ -203,6 +203,8 @@ export const spec = {
       utils.deepSetValue(payload, 'regs.coppa', 1);
     }
 
+    _marshallEids(payload, validBidRequests);
+
     var options = {contentType: 'text/plain'}
 
     _logInfo('buildRequests payload', payload);
@@ -569,6 +571,13 @@ function _addFloorFromFloorModule(impObj, bid) {
 
   // assign if it has a valid floor - > 0
   impObj.bidfloor = ((!isNaN(bidFloor) && bidFloor > 0) ? bidFloor : UNDEFINED);
+}
+
+function _marshallEids(payload, validBidRequests) {
+  const bidUserIdAsEids = utils.deepAccess(validBidRequests, '0.userIdAsEids');
+  if (utils.isArray(bidUserIdAsEids) && bidUserIdAsEids.length > 0) {
+    utils.deepSetValue(payload, 'user.eids', bidUserIdAsEids);
+  }
 }
 
 function _createNativeRequest(params) {
