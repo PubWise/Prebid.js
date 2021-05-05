@@ -252,6 +252,18 @@ function filterAuctionInit(data) {
   return modified;
 }
 
+function filterBidRequested(data) {
+  let modified = Object.assign({}, data);
+
+  if (typeof modified.gdprConsent !== 'undefined') {
+    delete modified.gdprConsent; // not tracking through this channel currently
+  }
+
+  modified.gdprConsent = {};
+
+  return modified;
+}
+
 let pubwiseAnalytics = Object.assign(adapter({analyticsType}), {
   // Override AnalyticsAdapter functions by supplying custom methods
   track({eventType, args}) {
@@ -279,6 +291,8 @@ pubwiseAnalytics.handleEvent = function(eventType, data) {
       data = filterAuctionInit(data);
     } else if (eventType === CONSTANTS.EVENTS.BID_RESPONSE) {
       data = filterBidResponse(data);
+    } else if (eventType === CONSTANTS.EVENTS.BID_REQUESTED) {
+      data = filterBidRequested(data);
     }
 
     // add all ingested events
