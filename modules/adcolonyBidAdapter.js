@@ -22,14 +22,14 @@ import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, NATIVE } from '../src/mediaTypes.js';
 const VERSION = '0.1.0';
-const GVLID = 842;
+const GVLID = 458;
 const NET_REVENUE = true;
 const UNDEFINED = undefined;
 const DEFAULT_CURRENCY = 'USD';
 const AUCTION_TYPE = 1;
 const BIDDER_CODE = 'adcolony';
-// const ENDPOINT_URL = 'http://omax.admarvel.com/rtb/omax?site_id=233587&partner_id=9d251c721c1ccebb&wp=1'; using PubWise endpoint for testing
-const ENDPOINT_URL = 'https://bid.pubwise.io/prebid';
+const ENDPOINT_URL = 'http://omax.admarvel.com/rtb/omax?site_id=233587&partner_id=9d251c721c1ccebb&wp=1';
+// const ENDPOINT_URL = 'https://bid.pubwise.io/prebid'; // testing observable endpoint
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
 const PREBID_NATIVE_HELP_LINK = 'https://prebid.org/dev-docs/show-native-ads.html';
@@ -38,7 +38,7 @@ const PREBID_NATIVE_HELP_LINK = 'https://prebid.org/dev-docs/show-native-ads.htm
 const CUSTOM_PARAMS = {
   'gender': '', // User gender
   'yob': '', // User year of birth
-  'geo': '', // Geo Information
+  'geo': {}, // Geo Information
 };
 
 // rtb native types are meant to be dynamic and extendable
@@ -432,13 +432,13 @@ function _handleCustomParams(params, conf) {
         entry = CUSTOM_PARAMS[key];
 
         if (typeof entry === 'object') {
-          value = entry.f(value, conf);
-        }
-
-        if (utils.isStr(value)) {
           conf[key] = value;
         } else {
-          _logWarn('Ignoring param : ' + key + ' with value : ' + CUSTOM_PARAMS[key] + ', expects string-value, found ' + typeof value);
+          if (utils.isStr(value)) {
+            conf[key] = value;
+          } else {
+            _logWarn('Ignoring param : ' + key + ' with value : ' + CUSTOM_PARAMS[key] + ', expects string-value, found ' + typeof value);
+          }
         }
       }
     }
