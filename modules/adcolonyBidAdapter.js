@@ -28,7 +28,7 @@ const UNDEFINED = undefined;
 const DEFAULT_CURRENCY = 'USD';
 const AUCTION_TYPE = 1;
 const BIDDER_CODE = 'adcolony';
-const ENDPOINT_URL = 'http://omax.admarvel.com/rtb/omax?site_id=233587&partner_id=9d251c721c1ccebb&wp=1';
+const ENDPOINT_URL = 'https://omax.admarvel.com/rtb/omax?site_id=233587&partner_id=9d251c721c1ccebb&wp=1';
 // const ENDPOINT_URL = 'https://bid.pubwise.io/prebid'; // testing observable endpoint
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
@@ -97,6 +97,7 @@ const NATIVE_MINIMUM_REQUIRED_IMAGE_ASSETS = [
 let isInvalidNativeRequest = false
 let NATIVE_ASSET_ID_TO_KEY_MAP = {};
 let NATIVE_ASSET_KEY_TO_ASSET_MAP = {};
+let localRequestCache = new Map();
 
 // together allows traversal of NATIVE_ASSETS_LIST in any direction
 // id -> key
@@ -287,8 +288,10 @@ export const spec = {
         seatbidder.bid &&
             utils.isArray(seatbidder.bid) &&
             seatbidder.bid.forEach(bid => {
+              // get the bidId from cache
               let newBid = {
-                requestId: bid.impid,
+                // requestId: bid.impid,
+                requestId: localRequestCache.get(parsedRequest.source.tid), // updates
                 cpm: (parseFloat(bid.price) || 0).toFixed(2),
                 width: bid.w,
                 height: bid.h,
@@ -494,8 +497,11 @@ function _createImpressionObject(bid, conf) {
   var nativeObj = {};
   var mediaTypes = '';
 
+  localRequestCache.set(conf.transactionId, bid.bidId);
+
   impObj = {
-    id: bid.bidId,
+    // id: bid.bidId,
+    id: 1, // per adcolony request this shuold always be 1
     tagid: bid.params.adUnit || undefined,
     bidfloor: _parseSlotParam('bidFloor', bid.params.bidFloor), // capitalization dicated by 3.2.4 spec
     secure: 1,

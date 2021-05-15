@@ -34,7 +34,7 @@ const sampleRequest = {
   'imp': [
     sampleRequestBanner,
     {
-      'id': '7329ddc1d84eb3',
+      'id': 1,
       'tagid': 'div-gpt-ad-1460505748561-1',
       'secure': 1,
       'bidfloorcur': 'USD',
@@ -72,7 +72,10 @@ const sampleRequest = {
   },
   'test': 0,
   'ext': {
-    'version': '0.0.1'
+    'pw-ext': {
+      'version': '0.0.1',
+      'origImpressionId': ''
+    }
   },
   'source': {
     'tid': '2c8cd034-f068-4419-8c30-f07292c0d17b'
@@ -215,7 +218,7 @@ const sampleValidBidRequests = [
     'adUnitCode': 'div-gpt-ad-1460505748561-1',
     'transactionId': '2c8cd034-f068-4419-8c30-f07292c0d17b',
     'sizes': [],
-    'bidId': '30ab7516a51a7c',
+    'bidId': '6c148795eb836a',
     'bidderRequestId': '18a45bff5ff705',
     'auctionId': '9f20663c-4629-4b5c-bff6-ff3aa8319358',
     'src': 'client',
@@ -371,7 +374,7 @@ const sampleBidderRequest = {
       'adUnitCode': 'div-gpt-ad-1460505748561-1',
       'transactionId': '2c8cd034-f068-4419-8c30-f07292c0d17b',
       'sizes': [],
-      'bidId': '30ab7516a51a7c',
+      'bidId': '6c148795eb836a',
       'bidderRequestId': '18a45bff5ff705',
       'auctionId': '9f20663c-4629-4b5c-bff6-ff3aa8319358',
       'src': 'client',
@@ -415,15 +418,7 @@ const sampleRTBResponse = {
             'w': 300,
             'h': 250
           },
-          {
-            'id': '1606579704052',
-            'impid': '7329ddc1d84eb3',
-            'price': 1.23,
-            'adm': '{"ver":"1.2","assets":[{"id":1,"title":{"text":"AdColony Test"}},{"id":2,"img":{"type":3,"url":"http://www.adcolony.com","w":300,"h":250}},{"id":3,"img":{"type":1,"url":"http://www.adcolony.com","w":150,"h":125}},{"id":5,"data":{"type":2,"value":"AdColony Test Desc"}},{"id":4,"data":{"type":1,"value":"AdColony.com"}}],"link":{"url":"http://www.adcolony.com"}}',
-            'crid': 'test',
-            'w': 300,
-            'h': 250
-          }
+
         ]
       }
     ],
@@ -447,41 +442,6 @@ const samplePBBidObjects = [
     'partnerImpId': '1606579704052',
     'meta': {},
     'mediaType': 'banner',
-  },
-  {
-    'requestId': '7329ddc1d84eb3',
-    'cpm': '1.23',
-    'width': 300,
-    'height': 250,
-    'creativeId': 'test',
-    'currency': 'USD',
-    'netRevenue': true,
-    'ttl': 300,
-    'ad': '{\"ver\":\"1.2\",\"assets\":[{\"id\":1,\"title\":{\"text\":\"AdColony Test\"}},{\"id\":2,\"img\":{\"type\":3,\"url\":\"http://www.adcolony.com\",\"w\":300,\"h\":250}},{\"id\":3,\"img\":{\"type\":1,\"url\":\"http://www.adcolony.com\",\"w\":150,\"h\":125}},{\"id\":5,\"data\":{\"type\":2,\"value\":\"AdColony Test Desc\"}},{\"id\":4,\"data\":{\"type\":1,\"value\":\"AdColony.com\"}}],\"link\":{\"url\":\"http://www.adcolony.com\"}}',
-    'pw_seat': null,
-    'pw_dspid': null,
-    'partnerImpId': '1606579704052',
-    'mediaType': 'native',
-    'native': {
-      'body': 'AdColony Test Desc',
-      'icon': {
-        'height': 125,
-        'url': 'http://www.adcolony.com',
-        'width': 150,
-      },
-      'image': {
-        'height': 250,
-        'url': 'http://www.adcolony.com',
-        'width': 300,
-      },
-      'sponsoredBy': 'AdColony.com',
-      'title': 'AdColony Test'
-    },
-    'meta': {},
-    'impressionTrackers': [],
-    'jstracker': [],
-    'clickTrackers': [],
-    'clickUrl': 'http://www.adcolony.com'
   }
 ];
 
