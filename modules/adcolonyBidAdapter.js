@@ -26,7 +26,7 @@ const GVLID = 458;
 const NET_REVENUE = true;
 const UNDEFINED = undefined;
 const DEFAULT_CURRENCY = 'USD';
-const AUCTION_TYPE = 1;
+// const AUCTION_TYPE = 1;
 const BIDDER_CODE = 'adcolony';
 const ENDPOINT_URL = 'https://omax.admarvel.com/rtb/omax?site_id=233587&partner_id=9d251c721c1ccebb&wp=1';
 // const ENDPOINT_URL = 'https://bid.pubwise.io/prebid'; // testing observable endpoint
@@ -452,7 +452,7 @@ function _handleCustomParams(params, conf) {
 function _createOrtbTemplate(conf) {
   return {
     id: '' + new Date().getTime(),
-    at: AUCTION_TYPE,
+    // at: AUCTION_TYPE,
     cur: [DEFAULT_CURRENCY],
     imp: [],
     // site: {
@@ -800,10 +800,14 @@ function _createBannerRequest(bid) {
     }
     bannerObj.pos = 0;
     bannerObj.topframe = utils.inIframe() ? 0 : 1;
+
+    bannerObj.mimes = 'application/json';
+    bannerObj.api = 0;
   } else {
     _logWarn('Error: mediaTypes.banner.size missing for adunit: ' + bid.params.adUnit + '. Ignoring the banner impression in the adunit.');
     bannerObj = UNDEFINED;
   }
+
   return bannerObj;
 }
 
