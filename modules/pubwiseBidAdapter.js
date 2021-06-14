@@ -13,7 +13,7 @@ const ENDPOINT_URL = 'https://bid.pubwise.io/prebid';
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
 const PREBID_NATIVE_HELP_LINK = 'https://prebid.org/dev-docs/show-native-ads.html';
-// const USERSYNC_URL = '//127.0.0.1:8080/usersync'
+const USER_SYNC_URL_IMAGE = 'https://sync.pubwise.io/usersync2/pubwisedirect';
 
 const CUSTOM_PARAMS = {
   'gender': '', // User gender
@@ -286,7 +286,20 @@ export const spec = {
     // _logError(error);
     // }
     return bidResponses;
-  }
+  },
+  /**
+   * Register User Sync.
+   */
+  getUserSyncs: (syncOptions, responses, gdprConsent, uspConsent) => {
+    if (syncOptions.iframeEnabled) {
+      // no frame options supported currently
+    } else {
+      return [{
+        type: 'image',
+        url: USER_SYNC_URL_IMAGE
+      }];
+    }
+  },
 }
 
 function _checkMediaType(adm, newBid) {
