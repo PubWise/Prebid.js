@@ -292,7 +292,10 @@ export const spec = {
    */
   getUserSyncs: (syncOptions, responses, gdprConsent, uspConsent) => {
     if (syncOptions.iframeEnabled) {
-      // no frame options supported currently
+      return [{
+        type: 'iframe',
+        url: USER_SYNC_URL_IMAGE
+      }];
     } else {
       return [{
         type: 'image',
