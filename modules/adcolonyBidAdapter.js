@@ -28,7 +28,7 @@ const UNDEFINED = undefined;
 const DEFAULT_CURRENCY = 'USD';
 // const AUCTION_TYPE = 1;
 const BIDDER_CODE = 'adcolony';
-const ENDPOINT_URL = 'https://omax.admarvel.com/rtb/omax?site_id=233587&partner_id=9d251c721c1ccebb&wp=1';
+const ENDPOINT_URL = 'https://omax.admarvel.com/rtb/omax?site_id=233587&partner_id=9d251c721c1ccebb';
 // const ENDPOINT_URL = 'https://bid.pubwise.io/prebid'; // testing observable endpoint
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
@@ -240,7 +240,7 @@ export const spec = {
     }
 
     // build site object
-    // payload.site.publisher.id = bid.params.siteId.trim();
+    // payload.site.publisher.id = '9d251c721c1ccebb';
     // payload.site.page = payload.site.page.trim();
     // payload.site.domain = _getDomainFromURL(payload.site.page);
 
@@ -252,6 +252,8 @@ export const spec = {
     // Build App Object
     payload.app.id = bid.params.siteId.trim();
     payload.app.bundle = bid.params.bundleId.trim();
+    payload.app.publisher.id = '9d251c721c1ccebb';
+    payload.app.publisher.name = 'Digital Turbine';
     payload.app.storeurl = 'https://play.google.com/store/apps/details?id=' + payload.app.bundle + '&hl=en_US&gl=US';
 
     var options = {contentType: 'text/plain'}
@@ -501,7 +503,7 @@ function _createImpressionObject(bid, conf) {
 
   impObj = {
     // id: bid.bidId,
-    id: 1, // per adcolony request this shuold always be 1
+    id: '1', // per adcolony request this shuold always be "1" and a string
     tagid: bid.params.adUnit || undefined,
     bidfloor: _parseSlotParam('bidFloor', bid.params.bidFloor), // capitalization dicated by 3.2.4 spec
     secure: 1,
@@ -801,8 +803,8 @@ function _createBannerRequest(bid) {
     bannerObj.pos = 0;
     bannerObj.topframe = utils.inIframe() ? 0 : 1;
 
-    bannerObj.mimes = 'application/json';
-    bannerObj.api = 0;
+    bannerObj.mimes = ['image/png', 'image/jpeg', 'image/gif', 'text/html', 'application/json', 'application/x-html5-ad-zip'];
+    bannerObj.api = [4];
   } else {
     _logWarn('Error: mediaTypes.banner.size missing for adunit: ' + bid.params.adUnit + '. Ignoring the banner impression in the adunit.');
     bannerObj = UNDEFINED;
