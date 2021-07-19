@@ -28,7 +28,7 @@ const UNDEFINED = undefined;
 const DEFAULT_CURRENCY = 'USD';
 // const AUCTION_TYPE = 1;
 const BIDDER_CODE = 'adcolony';
-const ENDPOINT_URL = 'https://omax.admarvel.com/rtb/omax?site_id=233587&partner_id=9d251c721c1ccebb';
+const ENDPOINT_URL = 'https://omax.admarvel.com/rtb/omax?partner_id=9d251c721c1ccebb';
 // const ENDPOINT_URL = 'https://bid.pubwise.io/prebid'; // testing observable endpoint
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
@@ -250,11 +250,13 @@ export const spec = {
     // }
 
     // Build App Object
-    payload.app.id = bid.params.siteId.trim();
+    payload.app.id = bid.params.appId.trim();
     payload.app.bundle = bid.params.bundleId.trim();
     payload.app.publisher.id = '9d251c721c1ccebb';
     payload.app.publisher.name = 'Digital Turbine';
     payload.app.storeurl = 'https://play.google.com/store/apps/details?id=' + payload.app.bundle + '&hl=en_US&gl=US';
+
+    var fullEndpointUrl = ENDPOINT_URL + 'site_id=' + bid.params.siteId;
 
     var options = {contentType: 'text/plain'}
 
@@ -263,7 +265,7 @@ export const spec = {
 
     return {
       method: 'POST',
-      url: ENDPOINT_URL,
+      url: fullEndpointUrl,
       data: payload,
       options: options,
       bidderRequest: bidderRequest,
@@ -804,7 +806,11 @@ function _createBannerRequest(bid) {
     bannerObj.topframe = utils.inIframe() ? 0 : 1;
 
     bannerObj.mimes = ['image/png', 'image/jpeg', 'image/gif', 'text/html', 'application/json', 'application/x-html5-ad-zip'];
-    bannerObj.api = [4];
+    if (bid.params && bid.params.siteId) {
+      bannerObj.api = [bid.params.apiFramework];
+    } else {
+      bannerObj.api = [4];
+    }
   } else {
     _logWarn('Error: mediaTypes.banner.size missing for adunit: ' + bid.params.adUnit + '. Ignoring the banner impression in the adunit.');
     bannerObj = UNDEFINED;
