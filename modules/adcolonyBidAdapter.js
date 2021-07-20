@@ -806,7 +806,7 @@ function _createBannerRequest(bid) {
     bannerObj.topframe = utils.inIframe() ? 0 : 1;
 
     bannerObj.mimes = ['image/png', 'image/jpeg', 'image/gif', 'text/html', 'application/json', 'application/x-html5-ad-zip'];
-    if (bid.params && bid.params.siteId) {
+    if (bid.params && bid.params.apiFramework) {
       bannerObj.api = [bid.params.apiFramework];
     } else {
       bannerObj.api = [4];
