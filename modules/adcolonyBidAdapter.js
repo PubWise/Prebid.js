@@ -256,7 +256,7 @@ export const spec = {
     payload.app.publisher.name = 'Digital Turbine';
     payload.app.storeurl = 'https://play.google.com/store/apps/details?id=' + payload.app.bundle + '&hl=en_US&gl=US';
 
-    var fullEndpointUrl = ENDPOINT_URL + 'site_id=' + bid.params.siteId;
+    var fullEndpointUrl = ENDPOINT_URL + '&site_id=' + bid.params.siteId;
 
     var options = {contentType: 'text/plain'}
 
