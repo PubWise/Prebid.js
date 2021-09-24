@@ -2,9 +2,10 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/main/containers/javascript-node
 {
 	"name": "Ubuntu",
+
 	"build": {
 		"dockerfile": "Dockerfile",		
-		"args": { "VARIANT": "16-buster" }
+		"args": { "VARIANT": "12" }
 	},
 
 	"postCreateCommand": "bash .devcontainer/postCreate.sh",
@@ -17,8 +18,8 @@
 	"extensions": [],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [],
+	"forwardPorts": [9999],
 
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+	"remoteUser": "node"
 }
