@@ -1,15 +1,35 @@
+/*****************************************************************************************************
+ * Notes:
+ * Handling Custom Params: on page: pubwise.extra_bidder_params.bids
+   pubwise.extra_bidder_params = {
+    "bids": [
+      {
+        "bidder": "adcolony",
+        "params": {
+          "geo": {
+            "lat": 15,
+            "lon": 13
+          }
+        }
+      }
+    ]
+  }
+ *
+ */
+
 import * as utils from '../src/utils.js';
 import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, NATIVE } from '../src/mediaTypes.js';
-const VERSION = '0.2.0';
-const GVLID = 842;
+const VERSION = '0.1.0';
+const GVLID = 458;
 const NET_REVENUE = true;
 const UNDEFINED = undefined;
 const DEFAULT_CURRENCY = 'USD';
-const AUCTION_TYPE = 1;
-const BIDDER_CODE = 'pwbid';
-const ENDPOINT_URL = 'https://bid.pubwise.io/prebid';
+// const AUCTION_TYPE = 1;
+const BIDDER_CODE = 'adcolony';
+const ENDPOINT_URL = 'https://omax.admarvel.com/rtb/omax?partner_id=9d251c721c1ccebb';
+// const ENDPOINT_URL = 'https://bid.pubwise.io/prebid'; // testing observable endpoint
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
 const PREBID_NATIVE_HELP_LINK = 'https://prebid.org/dev-docs/show-native-ads.html';
@@ -18,8 +38,7 @@ const PREBID_NATIVE_HELP_LINK = 'https://prebid.org/dev-docs/show-native-ads.htm
 const CUSTOM_PARAMS = {
   'gender': '', // User gender
   'yob': '', // User year of birth
-  'lat': '', // User location - Latitude
-  'lon': '', // User Location - Longitude
+  'geo': {}, // Geo Information
 };
 
 // rtb native types are meant to be dynamic and extendable
@@ -78,6 +97,7 @@ const NATIVE_MINIMUM_REQUIRED_IMAGE_ASSETS = [
 let isInvalidNativeRequest = false
 let NATIVE_ASSET_ID_TO_KEY_MAP = {};
 let NATIVE_ASSET_KEY_TO_ASSET_MAP = {};
+let localRequestCache = new Map();
 
 // together allows traversal of NATIVE_ASSETS_LIST in any direction
 // id -> key
@@ -101,6 +121,28 @@ export const spec = {
       // it must be a string
       if (!utils.isStr(bid.params.siteId)) {
         _logWarn('siteId is required for bid', bid);
+        return false;
+      }
+    } else {
+      return false;
+    }
+
+    // appId is required
+    if (bid.params && bid.params.appId) {
+      // it must be a string
+      if (!utils.isStr(bid.params.appId)) {
+        _logWarn('appId is required for bid', bid);
+        return false;
+      }
+    } else {
+      return false;
+    }
+
+    // bundleId is required
+    if (bid.params && bid.params.bundleId) {
+      // it must be a string
+      if (!utils.isStr(bid.params.bundleId)) {
+        _logWarn('bundleId is required for bid', bid);
         return false;
       }
     } else {
@@ -152,27 +194,21 @@ export const spec = {
     }
 
     // test bids can also be turned on here
-    if (window.location.href.indexOf('pubwiseTestBid=true') !== -1) {
+    if (window.location.href.indexOf('adcolonyTestBid=true') !== -1) {
       payload.test = 1;
     }
 
     if (bid.params.isTest) {
       payload.test = Number(bid.params.isTest) // should be 1 or 0
     }
-    payload.site.publisher.id = bid.params.siteId.trim();
-    payload.user.gender = (conf.gender ? conf.gender.trim() : UNDEFINED);
-    payload.user.geo = {};
-    payload.user.geo.lat = _parseSlotParam('lat', conf.lat);
-    payload.user.geo.lon = _parseSlotParam('lon', conf.lon);
-    payload.user.yob = _parseSlotParam('yob', conf.yob);
-    payload.device.geo = payload.user.geo;
-    payload.site.page = payload.site.page.trim();
-    payload.site.domain = _getDomainFromURL(payload.site.page);
 
-    // add the content object from config in request
-    if (typeof config.getConfig('content') === 'object') {
-      payload.site.content = config.getConfig('content');
+    payload.user.gender = (conf.gender ? conf.gender.trim() : UNDEFINED);
+    if (conf.geo) {
+      payload.user.geo = conf.geo;
+    } else {
+      payload.user.geo = {};
     }
+    payload.device.geo = payload.user.geo;
 
     // merge the device from config.getConfig('device')
     if (typeof config.getConfig('device') === 'object') {
@@ -203,7 +239,24 @@ export const spec = {
       utils.deepSetValue(payload, 'regs.coppa', 1);
     }
 
-    _setEIDs(payload, validBidRequests);
+    // build site object
+    // payload.site.publisher.id = '9d251c721c1ccebb';
+    // payload.site.page = payload.site.page.trim();
+    // payload.site.domain = _getDomainFromURL(payload.site.page);
+
+    // // add the content object from config in request
+    // if (typeof config.getConfig('content') === 'object') {
+    //   payload.site.content = config.getConfig('content');
+    // }
+
+    // Build App Object
+    payload.app.id = bid.params.appId.trim();
+    payload.app.bundle = bid.params.bundleId.trim();
+    payload.app.publisher.id = '9d251c721c1ccebb';
+    payload.app.publisher.name = 'Digital Turbine';
+    payload.app.storeurl = 'https://play.google.com/store/apps/details?id=' + payload.app.bundle + '&hl=en_US&gl=US';
+
+    var fullEndpointUrl = ENDPOINT_URL + '&site_id=' + bid.params.siteId;
 
     var options = {contentType: 'text/plain'}
 
@@ -212,7 +265,7 @@ export const spec = {
 
     return {
       method: 'POST',
-      url: ENDPOINT_URL,
+      url: fullEndpointUrl,
       data: payload,
       options: options,
       bidderRequest: bidderRequest,
@@ -239,8 +292,10 @@ export const spec = {
         seatbidder.bid &&
             utils.isArray(seatbidder.bid) &&
             seatbidder.bid.forEach(bid => {
+              // get the bidId from cache
               let newBid = {
-                requestId: bid.impid,
+                // requestId: bid.impid,
+                requestId: localRequestCache.get(parsedRequest.source.tid), // updates
                 cpm: (parseFloat(bid.price) || 0).toFixed(2),
                 width: bid.w,
                 height: bid.h,
@@ -291,24 +346,6 @@ export const spec = {
   }
 }
 
-/**
- * Handles EIDs in 2.5x Compatible Manner
- * https://github.com/InteractiveAdvertisingBureau/openrtb/blob/master/extensions/2.x_official_extensions/eids.md
- * @param {*} payload
- * @param {*} validBidRequests
- */
-function _setEIDs(payload, validBidRequests) {
-  let bidUserIdAsEids = utils.deepAccess(validBidRequests, '0.userIdAsEids');
-  if (utils.isArray(bidUserIdAsEids) && bidUserIdAsEids.length > 0) {
-    utils.deepSetValue(payload, 'user.ext.eids', bidUserIdAsEids);
-  }
-}
-
-/**
- * Check elements of the response to indicate response media type
- * @param {*} adm
- * @param {*} newBid
- */
 function _checkMediaType(adm, newBid) {
   // Create a regex here to check the strings
   var admJSON = '';
@@ -326,12 +363,6 @@ function _checkMediaType(adm, newBid) {
   }
 }
 
-/**
- * Parse out elements of the nativ response.
- * @param {*} bid
- * @param {*} newBid
- * @returns
- */
 function _parseNativeResponse(bid, newBid) {
   newBid.native = {};
   if (bid.hasOwnProperty('adm')) {
@@ -393,11 +424,11 @@ function _parseNativeResponse(bid, newBid) {
   }
 }
 
-function _getDomainFromURL(url) {
-  let anchor = document.createElement('a');
-  anchor.href = url;
-  return anchor.hostname;
-}
+// function _getDomainFromURL(url) {
+//   let anchor = document.createElement('a');
+//   anchor.href = url;
+//   return anchor.hostname;
+// }
 
 function _handleCustomParams(params, conf) {
   var key, value, entry;
@@ -408,16 +439,13 @@ function _handleCustomParams(params, conf) {
         entry = CUSTOM_PARAMS[key];
 
         if (typeof entry === 'object') {
-          // will be used in future when we want to
-          // process a custom param before using
-          // 'keyname': {f: function() {}}
-          value = entry.f(value, conf);
-        }
-
-        if (utils.isStr(value)) {
           conf[key] = value;
         } else {
-          _logWarn('Ignoring param : ' + key + ' with value : ' + CUSTOM_PARAMS[key] + ', expects string-value, found ' + typeof value);
+          if (utils.isStr(value)) {
+            conf[key] = value;
+          } else {
+            _logWarn('Ignoring param : ' + key + ' with value : ' + CUSTOM_PARAMS[key] + ', expects string-value, found ' + typeof value);
+          }
         }
       }
     }
@@ -425,21 +453,32 @@ function _handleCustomParams(params, conf) {
   return conf;
 }
 
-/**
- * Create the baseline oRTB Template @ oRTB 2.5+Extensions
- * @param {*} conf
- * @returns
- */
 function _createOrtbTemplate(conf) {
   return {
     id: '' + new Date().getTime(),
-    at: AUCTION_TYPE,
+    // at: AUCTION_TYPE,
     cur: [DEFAULT_CURRENCY],
     imp: [],
-    site: {
-      page: conf.pageURL,
-      ref: conf.refURL,
-      publisher: {}
+    // site: {
+    //   page: conf.pageURL,
+    //   ref: conf.refURL,
+    //   publisher: {}
+    // },
+    app: {
+      id: '233587',
+      name: '',
+      bundle: '',
+      domain: '',
+      storeurl: '',
+      cat: [],
+      sectioncat: [],
+      pagecat: [],
+      ver: '',
+      privacypolicy: 0,
+      paid: 0,
+      publisher: {},
+      content: {},
+      ext: {},
     },
     device: {
       ua: navigator.userAgent,
@@ -451,11 +490,7 @@ function _createOrtbTemplate(conf) {
     },
     user: {},
     ext: {
-      pubwise: {
-        pbbidder: {
-          version: VERSION
-        }
-      }
+      version: VERSION
     }
   };
 }
@@ -466,8 +501,11 @@ function _createImpressionObject(bid, conf) {
   var nativeObj = {};
   var mediaTypes = '';
 
+  localRequestCache.set(conf.transactionId, bid.bidId);
+
   impObj = {
-    id: bid.bidId,
+    // id: bid.bidId,
+    id: '1', // per adcolony request this shuold always be "1" and a string
     tagid: bid.params.adUnit || undefined,
     bidfloor: _parseSlotParam('bidFloor', bid.params.bidFloor), // capitalization dicated by 3.2.4 spec
     secure: 1,
@@ -511,10 +549,6 @@ function _parseSlotParam(paramName, paramValue) {
 
   switch (paramName) {
     case 'bidFloor':
-      return parseFloat(paramValue) || UNDEFINED;
-    case 'lat':
-      return parseFloat(paramValue) || UNDEFINED;
-    case 'lon':
       return parseFloat(paramValue) || UNDEFINED;
     case 'yob':
       return parseInt(paramValue) || UNDEFINED;
@@ -585,7 +619,7 @@ function _addFloorFromFloorModule(impObj, bid) {
   let bidFloor = -1; // indicates no floor
 
   // get lowest floor from floorModule
-  if (typeof bid.getFloor === 'function' && !config.getConfig('pubwise.disableFloors')) {
+  if (typeof bid.getFloor === 'function' && !config.getConfig('adcolony.disableFloors')) {
     [BANNER, NATIVE].forEach(mediaType => {
       if (impObj.hasOwnProperty(mediaType)) {
         let floorInfo = bid.getFloor({ currency: impObj.bidFloorCur, mediaType: mediaType, size: '*' });
@@ -770,32 +804,40 @@ function _createBannerRequest(bid) {
     }
     bannerObj.pos = 0;
     bannerObj.topframe = utils.inIframe() ? 0 : 1;
+
+    bannerObj.mimes = ['image/png', 'image/jpeg', 'image/gif', 'text/html', 'application/json', 'application/x-html5-ad-zip'];
+    if (bid.params && bid.params.apiFramework) {
+      bannerObj.api = [bid.params.apiFramework];
+    } else {
+      bannerObj.api = [4];
+    }
   } else {
     _logWarn('Error: mediaTypes.banner.size missing for adunit: ' + bid.params.adUnit + '. Ignoring the banner impression in the adunit.');
     bannerObj = UNDEFINED;
   }
+
   return bannerObj;
 }
 
 // various error levels are not always used
 // eslint-disable-next-line no-unused-vars
 function _logMessage(textValue, objectValue) {
-  utils.logMessage('PubWise: ' + textValue, objectValue);
+  utils.logMessage('AdColony: ' + textValue, objectValue);
 }
 
 // eslint-disable-next-line no-unused-vars
 function _logInfo(textValue, objectValue) {
-  utils.logInfo('PubWise: ' + textValue, objectValue);
+  utils.logInfo('AdColony: ' + textValue, objectValue);
 }
 
 // eslint-disable-next-line no-unused-vars
 function _logWarn(textValue, objectValue) {
-  utils.logWarn('PubWise: ' + textValue, objectValue);
+  utils.logWarn('AdColony: ' + textValue, objectValue);
 }
 
 // eslint-disable-next-line no-unused-vars
 function _logError(textValue, objectValue) {
-  utils.logError('PubWise: ' + textValue, objectValue);
+  utils.logError('AdColony: ' + textValue, objectValue);
 }
 
 // function _decorateLog() {
