@@ -159,7 +159,8 @@ export const spec = {
     if (bid.params.isTest) {
       payload.test = Number(bid.params.isTest) // should be 1 or 0
     }
-    payload.site.publisher.id = bid.params.siteId.trim();
+    payload.site.id = bid.params.siteId.trim();
+    payload.site.publisher.id = payload.site.id;
     payload.user.gender = (conf.gender ? conf.gender.trim() : UNDEFINED);
     payload.user.geo = {};
     payload.user.geo.lat = _parseSlotParam('lat', conf.lat);
