@@ -13,7 +13,7 @@ const ENDPOINT_URL = 'https://bid.pubwise.io/prebid';
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
 const PREBID_NATIVE_HELP_LINK = 'https://prebid.org/dev-docs/show-native-ads.html';
-// const USERSYNC_URL = '//127.0.0.1:8080/usersync'
+const USERSYNC_URL = 'https://sync.pubwise.io/usersync2/pubwisedirect'
 
 const CUSTOM_PARAMS = {
   'gender': '', // User gender
@@ -289,8 +289,42 @@ export const spec = {
     // _logError(error);
     // }
     return bidResponses;
+  },
+  /**
+   * Handles User Sync Settings
+   * 
+   * @param {syncOptions} syncOptions Set of options provided in config
+   * @param {serverResponses} serverResponses server responses for bids
+   * @param {gdprConsent} gdprConsent gdpr data from session
+   * @param {uspConsent} uspConsent gdpr data from session
+   * 
+   */
+  getUserSyncs: function (syncOptions, serverResponses, gdprConsent, uspConsent) {
+    const syncs = []
+
+    var gdpr_params;
+    if (typeof gdprConsent.gdprApplies === 'boolean') {
+        gdpr_params = `gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
+    } else {
+        gdpr_params = `gdpr_consent=${gdprConsent.consentString}`;
+    }
+    
+    // not currently supported
+    // if (syncOptions.iframeEnabled) {
+    //     syncs.push({
+    //         type: 'iframe',
+    //         url: '//acdn.adnxs.com/ib/static/usersync/v3/async_usersync.html?' + gdpr_params
+    //     });
+    // }
+    if (syncOptions.pixelEnabled && serverResponses.length > 0) {
+        syncs.push({
+            type: 'image',
+            url: USERSYNC_URL + gdpr_params
+        });
+    }
+    return syncs;
   }
-}
+},
 
 /**
  * Handles EIDs in 2.5x Compatible Manner
