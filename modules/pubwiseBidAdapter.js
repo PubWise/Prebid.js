@@ -292,23 +292,23 @@ export const spec = {
   },
   /**
    * Handles User Sync Settings
-   * 
+   *
    * @param {syncOptions} syncOptions Set of options provided in config
    * @param {serverResponses} serverResponses server responses for bids
    * @param {gdprConsent} gdprConsent gdpr data from session
    * @param {uspConsent} uspConsent gdpr data from session
-   * 
+   *
    */
   getUserSyncs: function (syncOptions, serverResponses, gdprConsent, uspConsent) {
     const syncs = []
 
-    var gdpr_params;
+    var gdprParams;
     if (typeof gdprConsent.gdprApplies === 'boolean') {
-        gdpr_params = `gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
+      gdprParams = `gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
     } else {
-        gdpr_params = `gdpr_consent=${gdprConsent.consentString}`;
+      gdprParams = `gdpr_consent=${gdprConsent.consentString}`;
     }
-    
+
     // not currently supported
     // if (syncOptions.iframeEnabled) {
     //     syncs.push({
@@ -317,14 +317,14 @@ export const spec = {
     //     });
     // }
     if (syncOptions.pixelEnabled && serverResponses.length > 0) {
-        syncs.push({
-            type: 'image',
-            url: USERSYNC_URL + gdpr_params
-        });
+      syncs.push({
+        type: 'image',
+        url: USERSYNC_URL + gdprParams
+      });
     }
     return syncs;
   }
-},
+};
 
 /**
  * Handles EIDs in 2.5x Compatible Manner
