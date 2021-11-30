@@ -303,10 +303,10 @@ export const spec = {
     const syncs = []
 
     var gdprParams;
-    if (typeof gdprConsent.gdprApplies === 'boolean') {
-      gdprParams = `gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
+    if (gdprConsent) {
+      gdprParams = `?gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
     } else {
-      gdprParams = `gdpr_consent=${gdprConsent.consentString}`;
+      gdprParams = `?gdpr_consent=${gdprConsent.consentString}`;
     }
 
     // not currently supported
