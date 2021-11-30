@@ -159,7 +159,8 @@ export const spec = {
     if (bid.params.isTest) {
       payload.test = Number(bid.params.isTest) // should be 1 or 0
     }
-    payload.site.publisher.id = bid.params.siteId.trim();
+    payload.site.id = bid.params.siteId.trim();
+    payload.site.publisher.id = payload.site.id;
     payload.user.gender = (conf.gender ? conf.gender.trim() : UNDEFINED);
     payload.user.geo = {};
     payload.user.geo.lat = _parseSlotParam('lat', conf.lat);
@@ -502,7 +503,7 @@ function _createImpressionObject(bid, conf) {
 
   impObj = {
     id: bid.bidId,
-    tagid: bid.params.adUnit || undefined,
+    tagid: bid.params.adUnit || bid.adUnitCode || undefined,
     bidfloor: _parseSlotParam('bidFloor', bid.params.bidFloor), // capitalization dicated by 3.2.4 spec
     secure: 1,
     bidfloorcur: bid.params.currency ? _parseSlotParam('currency', bid.params.currency) : DEFAULT_CURRENCY // capitalization dicated by 3.2.4 spec
