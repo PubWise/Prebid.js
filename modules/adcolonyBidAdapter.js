@@ -273,9 +273,6 @@ export const spec = {
     _logInfo('buildRequests payload', payload);
     _logInfo('buildRequests bidderRequest', bidderRequest);
 
-    // eslint-disable-next-line no-console
-    console.info(JSON.stringify(payload));
-
     return {
       method: 'POST',
       url: fullEndpointUrl,
