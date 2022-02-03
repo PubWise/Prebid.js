@@ -549,11 +549,6 @@ describe('AdColonyAdapter', function () {
   });
 
   /** ****** Site Testing ***********/
-
-  const sampleSiteValidBidRequests = [
-    sampleSiteValidBannerBidRequest
-  ]
-
   const sampleSiteValidBannerBidRequest = {
     'bidder': 'adcolony',
     'params': {
@@ -619,32 +614,9 @@ describe('AdColonyAdapter', function () {
     'bidderWinsCount': 0
   };
 
-  const sampleSiteBidderRequest = {
-    'bidderCode': 'adcolony',
-    'auctionId': '9f20663c-4629-4b5c-bff6-ff3aa8319358',
-    'bidderRequestId': '18a45bff5ff705',
-    'bids': [
-      sampleSiteBidderBannerRequest
-    ],
-    'auctionStart': 1606269202001,
-    'timeout': 1000,
-    'gdprConsent': {
-      'consentString': 'BOEFEAyOEFEAyAHABDENAI4AAAB9vABAASA',
-      'gdprApplies': 1,
-    },
-    'uspConsent': 1,
-    'refererInfo': {
-      'referer': 'http://localhost:9999/integrationExamples/gpt/hello_world.html?pbjs_debug=true',
-      'reachedTop': true,
-      'isAmp': false,
-      'numIframes': 0,
-      'stack': [
-        'http://localhost:9999/integrationExamples/gpt/hello_world.html?pbjs_debug=true'
-      ],
-      'canonicalUrl': null
-    },
-    'start': 1606269202004
-  };
+  const sampleSiteValidBidRequests = [
+    sampleSiteValidBannerBidRequest
+  ]
 
   const sampleSiteBidderBannerRequest = {
     'bidder': 'adcolony',
@@ -717,6 +689,33 @@ describe('AdColonyAdapter', function () {
     'uspConsent': 1,
   };
 
+  const sampleSiteBidderRequest = {
+    'bidderCode': 'adcolony',
+    'auctionId': '9f20663c-4629-4b5c-bff6-ff3aa8319358',
+    'bidderRequestId': '18a45bff5ff705',
+    'bids': [
+      sampleSiteBidderBannerRequest
+    ],
+    'auctionStart': 1606269202001,
+    'timeout': 1000,
+    'gdprConsent': {
+      'consentString': 'BOEFEAyOEFEAyAHABDENAI4AAAB9vABAASA',
+      'gdprApplies': 1,
+    },
+    'uspConsent': 1,
+    'refererInfo': {
+      'referer': 'http://localhost:9999/integrationExamples/gpt/hello_world.html?pbjs_debug=true',
+      'reachedTop': true,
+      'isAmp': false,
+      'numIframes': 0,
+      'stack': [
+        'http://localhost:9999/integrationExamples/gpt/hello_world.html?pbjs_debug=true'
+      ],
+      'canonicalUrl': null
+    },
+    'start': 1606269202004
+  };
+
   describe('Properly Validates SITE Bids', function () {
     it('valid bid', function () {
       let validBid = {
@@ -730,8 +729,9 @@ describe('AdColonyAdapter', function () {
       expect(isValid).to.equal(true);
     });
 
-    it('should handle complex bidRequest', function() {
+    it('should handle complex SITE bidRequest', function() {
       let request = spec.buildRequests(sampleSiteValidBidRequests, sampleSiteBidderRequest);
+
       expect(request.bidderRequest).to.equal(sampleSiteBidderRequest);
     });
   });

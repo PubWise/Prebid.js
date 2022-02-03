@@ -21,6 +21,7 @@ import * as utils from '../src/utils.js';
 import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, NATIVE } from '../src/mediaTypes.js';
+
 const VERSION = '0.1.0';
 const GVLID = 458;
 const NET_REVENUE = true;
@@ -162,6 +163,7 @@ export const spec = {
    */
   buildRequests: function (validBidRequests, bidderRequest) {
     var refererInfo;
+
     if (bidderRequest && bidderRequest.refererInfo) {
       refererInfo = bidderRequest.refererInfo;
     }
@@ -253,6 +255,7 @@ export const spec = {
       payload.site.publisher.name = 'Digital Turbine';
       payload.site.page = payload.site.page.trim();
       payload.site.domain = _getDomainFromURL(payload.site.page);
+      delete payload.app;
     } else {
       // Build App Object
       payload.app.id = bid.params.appId.trim();
@@ -260,6 +263,7 @@ export const spec = {
       payload.app.publisher.id = '9d251c721c1ccebb';
       payload.app.publisher.name = 'Digital Turbine';
       payload.app.storeurl = 'https://play.google.com/store/apps/details?id=' + payload.app.bundle + '&hl=en_US&gl=US';
+      delete payload.site;
     }
 
     var fullEndpointUrl = ENDPOINT_URL + '&site_id=' + bid.params.siteId;
@@ -268,6 +272,9 @@ export const spec = {
 
     _logInfo('buildRequests payload', payload);
     _logInfo('buildRequests bidderRequest', bidderRequest);
+
+    // eslint-disable-next-line no-console
+    console.info(JSON.stringify(payload));
 
     return {
       method: 'POST',
@@ -465,11 +472,6 @@ function _createOrtbTemplate(conf) {
     // at: AUCTION_TYPE,
     cur: [DEFAULT_CURRENCY],
     imp: [],
-    // site: {
-    //   page: conf.pageURL,
-    //   ref: conf.refURL,
-    //   publisher: {}
-    // },
     app: {
       id: '233587',
       name: '',
@@ -485,6 +487,11 @@ function _createOrtbTemplate(conf) {
       publisher: {},
       content: {},
       ext: {},
+    },
+    site: {
+      page: conf.pageURL,
+      ref: conf.refURL,
+      publisher: {}
     },
     device: {
       ua: navigator.userAgent,
