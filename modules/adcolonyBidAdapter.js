@@ -561,7 +561,7 @@ function _parseAdSlot(bid) {
   _logInfo('parseAdSlot bid', bid)
   if (bid.adUnitCode) {
     bid.params.adUnit = bid.adUnitCode;
-  }else{
+  } else {
     bid.params.adUnit = '';
   }
   bid.params.width = 0;

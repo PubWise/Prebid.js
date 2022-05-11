@@ -243,7 +243,7 @@ const sampleBidderBannerRequest = {
     'bidFloor': '1.00',
     'currency': 'USD',
     'adSlot': '',
-    'adUnit': '',
+    'adUnit': 'div-gpt-ad-1460505748561-0',
     'bcat': [
       'IAB25-3',
       'IAB26-1',
@@ -553,6 +553,8 @@ describe('AdColonyAdapter', function () {
     'bidder': 'adcolony',
     'params': {
       'siteId': 'xxxxxx',
+      'appId': 'xxxxxx',
+      'bundleId': 'xxxxxx',
       'mode': 'site',
       'bidFloor': '1.00',
       'currency': 'USD',
@@ -622,6 +624,8 @@ describe('AdColonyAdapter', function () {
     'bidder': 'adcolony',
     'params': {
       'siteId': 'xxxxxx',
+      'appId': 'xxxxxx',
+      'bundleId': 'xxxxxx',
       'mode': 'site',
       'height': 250,
       'width': 300,
@@ -632,7 +636,7 @@ describe('AdColonyAdapter', function () {
       'bidFloor': '1.00',
       'currency': 'USD',
       'adSlot': '',
-      'adUnit': '',
+      'adUnit': 'div-gpt-ad-1460505748561-0',
       'bcat': [
         'IAB25-3',
         'IAB26-1',
@@ -722,6 +726,8 @@ describe('AdColonyAdapter', function () {
           bidder: 'adcolony',
           params: {
             siteId: 'xxxxxx',
+            appId: 'xxxxxx',
+            bundleId: 'xxxxxx',
             mode: 'site',
           }
         },
@@ -729,9 +735,13 @@ describe('AdColonyAdapter', function () {
       expect(isValid).to.equal(true);
     });
 
-    it('should handle complex SITE bidRequest', function() {
+    it('should handle complex SITE bidRequest method', function() {
       let request = spec.buildRequests(sampleSiteValidBidRequests, sampleSiteBidderRequest);
+      expect(request.method).to.equal('POST');
+    });
 
+    it('should handle complex SITE bidRequest data', function() {
+      let request = spec.buildRequests(sampleSiteValidBidRequests, sampleSiteBidderRequest);
       expect(request.bidderRequest).to.equal(sampleSiteBidderRequest);
     });
   });
