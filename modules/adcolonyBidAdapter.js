@@ -21,7 +21,6 @@ import * as utils from '../src/utils.js';
 import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, NATIVE } from '../src/mediaTypes.js';
-
 const VERSION = '0.1.0';
 const GVLID = 458;
 const NET_REVENUE = true;
@@ -128,29 +127,26 @@ export const spec = {
       return false;
     }
 
-    // only required for app mode
-    if (!(bid.params.mode && bid.params.mode == 'site')) {
-      // appId is required
-      if (bid.params && bid.params.appId) {
-        // it must be a string
-        if (!utils.isStr(bid.params.appId)) {
-          _logWarn('appId is required for bid', bid);
-          return false;
-        }
-      } else {
+    // appId is required
+    if (bid.params && bid.params.appId) {
+      // it must be a string
+      if (!utils.isStr(bid.params.appId)) {
+        _logWarn('appId is required for bid', bid);
         return false;
       }
+    } else {
+      return false;
+    }
 
-      // bundleId is required
-      if (bid.params && bid.params.bundleId) {
-        // it must be a string
-        if (!utils.isStr(bid.params.bundleId)) {
-          _logWarn('bundleId is required for bid', bid);
-          return false;
-        }
-      } else {
+    // bundleId is required
+    if (bid.params && bid.params.bundleId) {
+      // it must be a string
+      if (!utils.isStr(bid.params.bundleId)) {
+        _logWarn('bundleId is required for bid', bid);
         return false;
       }
+    } else {
+      return false;
     }
 
     return true;
@@ -163,7 +159,6 @@ export const spec = {
    */
   buildRequests: function (validBidRequests, bidderRequest) {
     var refererInfo;
-
     if (bidderRequest && bidderRequest.refererInfo) {
       refererInfo = bidderRequest.refererInfo;
     }
@@ -244,27 +239,22 @@ export const spec = {
       utils.deepSetValue(payload, 'regs.coppa', 1);
     }
 
+    // build site object
+    // payload.site.publisher.id = '9d251c721c1ccebb';
+    // payload.site.page = payload.site.page.trim();
+    // payload.site.domain = _getDomainFromURL(payload.site.page);
+
     // // add the content object from config in request
     // if (typeof config.getConfig('content') === 'object') {
     //   payload.site.content = config.getConfig('content');
     // }
 
-    if (bid.params.mode && bid.params.mode == 'site') {
-      // build site object
-      payload.site.publisher.id = '9d251c721c1ccebb';
-      payload.site.publisher.name = 'Digital Turbine';
-      payload.site.page = payload.site.page.trim();
-      payload.site.domain = _getDomainFromURL(payload.site.page);
-      delete payload.app;
-    } else {
-      // Build App Object
-      payload.app.id = bid.params.appId.trim();
-      payload.app.bundle = bid.params.bundleId.trim();
-      payload.app.publisher.id = '9d251c721c1ccebb';
-      payload.app.publisher.name = 'Digital Turbine';
-      payload.app.storeurl = 'https://play.google.com/store/apps/details?id=' + payload.app.bundle + '&hl=en_US&gl=US';
-      delete payload.site;
-    }
+    // Build App Object
+    payload.app.id = bid.params.appId.trim();
+    payload.app.bundle = bid.params.bundleId.trim();
+    payload.app.publisher.id = '9d251c721c1ccebb';
+    payload.app.publisher.name = 'Digital Turbine';
+    payload.app.storeurl = 'https://play.google.com/store/apps/details?id=' + payload.app.bundle + '&hl=en_US&gl=US';
 
     var fullEndpointUrl = ENDPOINT_URL + '&site_id=' + bid.params.siteId;
 
@@ -434,11 +424,11 @@ function _parseNativeResponse(bid, newBid) {
   }
 }
 
-function _getDomainFromURL(url) {
-  let anchor = document.createElement('a');
-  anchor.href = url;
-  return anchor.hostname;
-}
+// function _getDomainFromURL(url) {
+//   let anchor = document.createElement('a');
+//   anchor.href = url;
+//   return anchor.hostname;
+// }
 
 function _handleCustomParams(params, conf) {
   var key, value, entry;
@@ -469,6 +459,11 @@ function _createOrtbTemplate(conf) {
     // at: AUCTION_TYPE,
     cur: [DEFAULT_CURRENCY],
     imp: [],
+    // site: {
+    //   page: conf.pageURL,
+    //   ref: conf.refURL,
+    //   publisher: {}
+    // },
     app: {
       id: '233587',
       name: '',
@@ -484,11 +479,6 @@ function _createOrtbTemplate(conf) {
       publisher: {},
       content: {},
       ext: {},
-    },
-    site: {
-      page: conf.pageURL,
-      ref: conf.refURL,
-      publisher: {}
     },
     device: {
       ua: navigator.userAgent,
