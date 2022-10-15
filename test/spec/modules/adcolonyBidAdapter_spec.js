@@ -502,13 +502,15 @@ describe('AdColonyAdapter', function () {
 
   describe('Handling Request Construction', function () {
     it('bid requests are not mutable', function() {
-      let sourceBidRequest = utils.deepClone(sampleValidBidRequests)
+      let sourceBidRequest = utils.deepClone(sampleValidBidRequests);
       spec.buildRequests(sampleValidBidRequests, {auctionId: 'placeholder'});
       expect(sampleValidBidRequests).to.deep.equal(sourceBidRequest, 'Should be unedited as they are used elsewhere');
     });
     it('should handle complex bidRequest', function() {
       let request = spec.buildRequests(sampleValidBidRequests, sampleBidderRequest);
-      expect(request.bidderRequest).to.equal(sampleBidderRequest);
+      expect(request.bidderRequest).to.equal(sampleBidderRequest, "Bid Request Doesn't Match Sample");
+      expect(request.data.source.tid).to.equal(sampleBidderRequest.auctionId, 'AuctionId -> source.tid Mismatch');
+      expect(request.data.imp[0].ext.tid).to.equal(sampleBidderRequest.bids[0].transactionId, 'TransactionId -> ext.tid Mismatch');
     });
     it('must conform to API for buildRequests', function() {
       let request = spec.buildRequests(sampleValidBidRequests);
@@ -536,7 +538,7 @@ describe('AdColonyAdapter', function () {
     it('parses banner', function() {
       let testBid = utils.deepClone(sampleValidBannerBidRequest)
       _parseAdSlot(testBid)
-      expect(testBid).to.deep.equal(sampleBidderBannerRequest);
+      expect(testBid).to.deep.equal(sampleBidderBannerRequest, JSON.stringify(testBid) + ' ' + JSON.stringify(sampleBidderBannerRequest));
     });
   });
 
@@ -726,8 +728,6 @@ describe('AdColonyAdapter', function () {
           bidder: 'adcolony',
           params: {
             siteId: 'xxxxxx',
-            appId: 'xxxxxx',
-            bundleId: 'xxxxxx',
             mode: 'site',
           }
         },
@@ -735,13 +735,9 @@ describe('AdColonyAdapter', function () {
       expect(isValid).to.equal(true);
     });
 
-    it('should handle complex SITE bidRequest method', function() {
+    it('should handle complex SITE bidRequest', function() {
       let request = spec.buildRequests(sampleSiteValidBidRequests, sampleSiteBidderRequest);
-      expect(request.method).to.equal('POST');
-    });
 
-    it('should handle complex SITE bidRequest data', function() {
-      let request = spec.buildRequests(sampleSiteValidBidRequests, sampleSiteBidderRequest);
       expect(request.bidderRequest).to.equal(sampleSiteBidderRequest);
     });
   });

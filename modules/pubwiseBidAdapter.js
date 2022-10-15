@@ -2,7 +2,7 @@ import { _each, isStr, deepClone, isArray, deepSetValue, inIframe, logMessage, l
 import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, NATIVE } from '../src/mediaTypes.js';
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const GVLID = 842;
 const NET_REVENUE = true;
 const UNDEFINED = undefined;
@@ -166,7 +166,7 @@ export const spec = {
     payload.user.geo.lon = _parseSlotParam('lon', conf.lon);
     payload.user.yob = _parseSlotParam('yob', conf.yob);
     payload.device.geo = payload.user.geo;
-    payload.site.page = payload.site.page.trim();
+    payload.site.page = payload.site?.page?.trim();
     payload.site.domain = _getDomainFromURL(payload.site.page);
 
     // add the content object from config in request
@@ -179,8 +179,8 @@ export const spec = {
       payload.device = Object.assign(payload.device, config.getConfig('device'));
     }
 
-    // passing transactionId in source.tid
-    deepSetValue(payload, 'source.tid', conf.transactionId);
+    // passing auctionId in source.tid
+    deepSetValue(payload, 'source.tid', bidderRequest?.auctionId);
 
     // schain
     if (validBidRequests[0].schain) {
@@ -436,7 +436,10 @@ function _createImpressionObject(bid, conf) {
     tagid: bid.params.adUnit || undefined,
     bidfloor: _parseSlotParam('bidFloor', bid.params.bidFloor), // capitalization dicated by 3.2.4 spec
     secure: 1,
-    bidfloorcur: bid.params.currency ? _parseSlotParam('currency', bid.params.currency) : DEFAULT_CURRENCY // capitalization dicated by 3.2.4 spec
+    bidfloorcur: bid.params.currency ? _parseSlotParam('currency', bid.params.currency) : DEFAULT_CURRENCY, // capitalization dicated by 3.2.4 spec
+    ext: {
+      tid: (bid.transactionId ? bid.transactionId : '')
+    }
   };
 
   if (bid.hasOwnProperty('mediaTypes')) {
@@ -532,8 +535,8 @@ function _cleanSlotName(slotName) {
 
 function _initConf(refererInfo) {
   return {
-    pageURL: (refererInfo && refererInfo.referer) ? refererInfo.referer : window.location.href,
-    refURL: window.document.referrer
+    pageURL: refererInfo?.page,
+    refURL: refererInfo?.ref
   };
 }
 

@@ -21,7 +21,8 @@ import * as utils from '../src/utils.js';
 import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, NATIVE } from '../src/mediaTypes.js';
-const VERSION = '0.1.0';
+
+const VERSION = '0.2.0';
 const GVLID = 458;
 const NET_REVENUE = true;
 const UNDEFINED = undefined;
@@ -110,11 +111,11 @@ export const spec = {
   gvlid: GVLID,
   supportedMediaTypes: [BANNER, NATIVE],
   /**
-   * Determines whether or not the given bid request is valid.
-   *
-   * @param {BidRequest} bid The bid params to validate.
-   * @return boolean True if this is a valid bid, and false otherwise.
-   */
+     * Determines whether or not the given bid request is valid.
+     *
+     * @param {BidRequest} bid The bid params to validate.
+     * @return boolean True if this is a valid bid, and false otherwise.
+     */
   isBidRequestValid: function (bid) {
     // siteId is required
     if (bid.params && bid.params.siteId) {
@@ -127,38 +128,42 @@ export const spec = {
       return false;
     }
 
-    // appId is required
-    if (bid.params && bid.params.appId) {
-      // it must be a string
-      if (!utils.isStr(bid.params.appId)) {
-        _logWarn('appId is required for bid', bid);
+    // only required for app mode
+    if (!(bid.params.mode && bid.params.mode == 'site')) {
+      // appId is required
+      if (bid.params && bid.params.appId) {
+        // it must be a string
+        if (!utils.isStr(bid.params.appId)) {
+          _logWarn('appId is required for bid', bid);
+          return false;
+        }
+      } else {
         return false;
       }
-    } else {
-      return false;
-    }
 
-    // bundleId is required
-    if (bid.params && bid.params.bundleId) {
-      // it must be a string
-      if (!utils.isStr(bid.params.bundleId)) {
-        _logWarn('bundleId is required for bid', bid);
+      // bundleId is required
+      if (bid.params && bid.params.bundleId) {
+        // it must be a string
+        if (!utils.isStr(bid.params.bundleId)) {
+          _logWarn('bundleId is required for bid', bid);
+          return false;
+        }
+      } else {
         return false;
       }
-    } else {
-      return false;
     }
 
     return true;
   },
   /**
-   * Make a server request from the list of BidRequests.
-   *
-   * @param {validBidRequests[]} - an array of bids
-   * @return ServerRequest Info describing the request to the server.
-   */
+     * Make a server request from the list of BidRequests.
+     *
+     * @param {validBidRequests[]} - an array of bids
+     * @return ServerRequest Info describing the request to the server.
+     */
   buildRequests: function (validBidRequests, bidderRequest) {
     var refererInfo;
+
     if (bidderRequest && bidderRequest.refererInfo) {
       refererInfo = bidderRequest.refererInfo;
     }
@@ -202,21 +207,23 @@ export const spec = {
       payload.test = Number(bid.params.isTest) // should be 1 or 0
     }
 
+    payload.site.publisher.id = bid.params.siteId.trim();
     payload.user.gender = (conf.gender ? conf.gender.trim() : UNDEFINED);
-    if (conf.geo) {
-      payload.user.geo = conf.geo;
-    } else {
-      payload.user.geo = {};
-    }
+    payload.user.geo = {};
+    payload.user.geo.lat = _parseSlotParam('lat', conf.lat);
+    payload.user.geo.lon = _parseSlotParam('lon', conf.lon);
+    payload.user.yob = _parseSlotParam('yob', conf.yob);
     payload.device.geo = payload.user.geo;
+    payload.site.page = payload.site?.page?.trim();
+    payload.site.domain = _getDomainFromURL(payload.site.page);
 
     // merge the device from config.getConfig('device')
     if (typeof config.getConfig('device') === 'object') {
       payload.device = Object.assign(payload.device, config.getConfig('device'));
     }
 
-    // passing transactionId in source.tid
-    utils.deepSetValue(payload, 'source.tid', conf.transactionId);
+    // passing auctionId in source.tid
+    utils.deepSetValue(payload, 'source.tid', bidderRequest?.auctionId);
 
     // schain
     if (validBidRequests[0].schain) {
@@ -239,22 +246,27 @@ export const spec = {
       utils.deepSetValue(payload, 'regs.coppa', 1);
     }
 
-    // build site object
-    // payload.site.publisher.id = '9d251c721c1ccebb';
-    // payload.site.page = payload.site.page.trim();
-    // payload.site.domain = _getDomainFromURL(payload.site.page);
-
     // // add the content object from config in request
     // if (typeof config.getConfig('content') === 'object') {
     //   payload.site.content = config.getConfig('content');
     // }
 
-    // Build App Object
-    payload.app.id = bid.params.appId.trim();
-    payload.app.bundle = bid.params.bundleId.trim();
-    payload.app.publisher.id = '9d251c721c1ccebb';
-    payload.app.publisher.name = 'Digital Turbine';
-    payload.app.storeurl = 'https://play.google.com/store/apps/details?id=' + payload.app.bundle + '&hl=en_US&gl=US';
+    if (bid.params.mode && bid.params.mode == 'site') {
+      // build site object
+      payload.site.publisher.id = '9d251c721c1ccebb';
+      payload.site.publisher.name = 'Digital Turbine';
+      payload.site.page = payload.site?.page?.trim();
+      payload.site.domain = _getDomainFromURL(payload.site.page);
+      delete payload.app;
+    } else {
+      // Build App Object
+      payload.app.id = bid.params.appId.trim();
+      payload.app.bundle = bid.params.bundleId.trim();
+      payload.app.publisher.id = '9d251c721c1ccebb';
+      payload.app.publisher.name = 'Digital Turbine';
+      payload.app.storeurl = 'https://play.google.com/store/apps/details?id=' + payload.app.bundle + '&hl=en_US&gl=US';
+      delete payload.site;
+    }
 
     var fullEndpointUrl = ENDPOINT_URL + '&site_id=' + bid.params.siteId;
 
@@ -272,11 +284,11 @@ export const spec = {
     };
   },
   /**
-   * Unpack the response from the server into a list of bids.
-   *
-   * @param {ServerResponse} serverResponse A successful response from the server.
-   * @return {Bid[]} An array of bids which were nested inside the server.
-   */
+     * Unpack the response from the server into a list of bids.
+     *
+     * @param {ServerResponse} serverResponse A successful response from the server.
+     * @return {Bid[]} An array of bids which were nested inside the server.
+     */
   interpretResponse: function (response, request) {
     const bidResponses = [];
     var respCur = DEFAULT_CURRENCY;
@@ -290,53 +302,53 @@ export const spec = {
       respCur = response.body.cur || respCur;
       response.body.seatbid.forEach(seatbidder => {
         seatbidder.bid &&
-            utils.isArray(seatbidder.bid) &&
-            seatbidder.bid.forEach(bid => {
-              // get the bidId from cache
-              let newBid = {
-                // requestId: bid.impid,
-                requestId: localRequestCache.get(parsedRequest.source.tid), // updates
-                cpm: (parseFloat(bid.price) || 0).toFixed(2),
-                width: bid.w,
-                height: bid.h,
-                creativeId: bid.crid || bid.id,
-                currency: respCur,
-                netRevenue: NET_REVENUE,
-                ttl: 300,
-                ad: bid.adm,
-                pw_seat: seatbidder.seat || null,
-                pw_dspid: bid.ext && bid.ext.dspid ? bid.ext.dspid : null,
-                partnerImpId: bid.id || '' // partner impression Id
-              };
-              if (parsedRequest.imp && parsedRequest.imp.length > 0) {
-                parsedRequest.imp.forEach(req => {
-                  if (bid.impid === req.id) {
-                    _checkMediaType(bid.adm, newBid);
-                    switch (newBid.mediaType) {
-                      case BANNER:
-                        break;
-                      case NATIVE:
-                        _parseNativeResponse(bid, newBid);
-                        break;
+              utils.isArray(seatbidder.bid) &&
+              seatbidder.bid.forEach(bid => {
+                // get the bidId from cache
+                let newBid = {
+                  // requestId: bid.impid,
+                  requestId: localRequestCache.get(parsedRequest.source.tid), // updates
+                  cpm: (parseFloat(bid.price) || 0).toFixed(2),
+                  width: bid.w,
+                  height: bid.h,
+                  creativeId: bid.crid || bid.id,
+                  currency: respCur,
+                  netRevenue: NET_REVENUE,
+                  ttl: 300,
+                  ad: bid.adm,
+                  pw_seat: seatbidder.seat || null,
+                  pw_dspid: bid.ext && bid.ext.dspid ? bid.ext.dspid : null,
+                  partnerImpId: bid.id || '' // partner impression Id
+                };
+                if (parsedRequest.imp && parsedRequest.imp.length > 0) {
+                  parsedRequest.imp.forEach(req => {
+                    if (bid.impid === req.id) {
+                      _checkMediaType(bid.adm, newBid);
+                      switch (newBid.mediaType) {
+                        case BANNER:
+                          break;
+                        case NATIVE:
+                          _parseNativeResponse(bid, newBid);
+                          break;
+                      }
                     }
-                  }
-                });
-              }
+                  });
+                }
 
-              newBid.meta = {};
-              if (bid.ext && bid.ext.dspid) {
-                newBid.meta.networkId = bid.ext.dspid;
-              }
-              if (bid.ext && bid.ext.advid) {
-                newBid.meta.buyerId = bid.ext.advid;
-              }
-              if (bid.adomain && bid.adomain.length > 0) {
-                newBid.meta.advertiserDomains = bid.adomain;
-                newBid.meta.clickUrl = bid.adomain[0];
-              }
+                newBid.meta = {};
+                if (bid.ext && bid.ext.dspid) {
+                  newBid.meta.networkId = bid.ext.dspid;
+                }
+                if (bid.ext && bid.ext.advid) {
+                  newBid.meta.buyerId = bid.ext.advid;
+                }
+                if (bid.adomain && bid.adomain.length > 0) {
+                  newBid.meta.advertiserDomains = bid.adomain;
+                  newBid.meta.clickUrl = bid.adomain[0];
+                }
 
-              bidResponses.push(newBid);
-            });
+                bidResponses.push(newBid);
+              });
       });
     }
     // } catch (error) {
@@ -424,11 +436,11 @@ function _parseNativeResponse(bid, newBid) {
   }
 }
 
-// function _getDomainFromURL(url) {
-//   let anchor = document.createElement('a');
-//   anchor.href = url;
-//   return anchor.hostname;
-// }
+function _getDomainFromURL(url) {
+  let anchor = document.createElement('a');
+  anchor.href = url;
+  return anchor.hostname;
+}
 
 function _handleCustomParams(params, conf) {
   var key, value, entry;
@@ -459,11 +471,6 @@ function _createOrtbTemplate(conf) {
     // at: AUCTION_TYPE,
     cur: [DEFAULT_CURRENCY],
     imp: [],
-    // site: {
-    //   page: conf.pageURL,
-    //   ref: conf.refURL,
-    //   publisher: {}
-    // },
     app: {
       id: '233587',
       name: '',
@@ -479,6 +486,11 @@ function _createOrtbTemplate(conf) {
       publisher: {},
       content: {},
       ext: {},
+    },
+    site: {
+      page: conf.pageURL,
+      ref: conf.refURL,
+      publisher: {}
     },
     device: {
       ua: navigator.userAgent,
@@ -509,7 +521,10 @@ function _createImpressionObject(bid, conf) {
     tagid: bid.params.adUnit || undefined,
     bidfloor: _parseSlotParam('bidFloor', bid.params.bidFloor), // capitalization dicated by 3.2.4 spec
     secure: 1,
-    bidfloorcur: bid.params.currency ? _parseSlotParam('currency', bid.params.currency) : DEFAULT_CURRENCY // capitalization dicated by 3.2.4 spec
+    bidfloorcur: bid.params.currency ? _parseSlotParam('currency', bid.params.currency) : DEFAULT_CURRENCY, // capitalization dicated by 3.2.4 spec
+    ext: {
+      tid: (bid.transactionId ? bid.transactionId : '')
+    }
   };
 
   if (bid.hasOwnProperty('mediaTypes')) {
@@ -538,7 +553,7 @@ function _createImpressionObject(bid, conf) {
   _addFloorFromFloorModule(impObj, bid);
 
   return impObj.hasOwnProperty(BANNER) ||
-          impObj.hasOwnProperty(NATIVE) ? impObj : UNDEFINED;
+            impObj.hasOwnProperty(NATIVE) ? impObj : UNDEFINED;
 }
 
 function _parseSlotParam(paramName, paramValue) {
@@ -570,7 +585,7 @@ function _parseAdSlot(bid) {
 
   if (bid.hasOwnProperty('mediaTypes')) {
     if (bid.mediaTypes.hasOwnProperty(BANNER) &&
-          bid.mediaTypes.banner.hasOwnProperty('sizes')) { // if its a banner, has mediaTypes and sizes
+            bid.mediaTypes.banner.hasOwnProperty('sizes')) { // if its a banner, has mediaTypes and sizes
       var i = 0;
       var sizeArray = [];
       for (;i < bid.mediaTypes.banner.sizes.length; i++) {
@@ -601,8 +616,8 @@ function _cleanSlotName(slotName) {
 
 function _initConf(refererInfo) {
   return {
-    pageURL: (refererInfo && refererInfo.referer) ? refererInfo.referer : window.location.href,
-    refURL: window.document.referrer
+    pageURL: refererInfo?.page,
+    refURL: refererInfo?.ref
   };
 }
 

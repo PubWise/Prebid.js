@@ -527,13 +527,15 @@ describe('PubWiseAdapter', function () {
 
   describe('Handling Request Construction', function () {
     it('bid requests are not mutable', function() {
-      let sourceBidRequest = utils.deepClone(sampleValidBidRequests)
-      spec.buildRequests(sampleValidBidRequests, {auctinId: 'placeholder'});
+      let sourceBidRequest = utils.deepClone(sampleValidBidRequests);
+      spec.buildRequests(sampleValidBidRequests, {auctionId: 'placeholder'});
       expect(sampleValidBidRequests).to.deep.equal(sourceBidRequest, 'Should be unedited as they are used elsewhere');
     });
     it('should handle complex bidRequest', function() {
       let request = spec.buildRequests(sampleValidBidRequests, sampleBidderRequest);
-      expect(request.bidderRequest).to.equal(sampleBidderRequest);
+      expect(request.bidderRequest).to.equal(sampleBidderRequest, "Bid Request Doesn't Match Sample");
+      expect(request.data.source.tid).to.equal(sampleBidderRequest.auctionId, 'AuctionId -> source.tid Mismatch');
+      expect(request.data.imp[0].ext.tid).to.equal(sampleBidderRequest.bids[0].transactionId, 'TransactionId -> ext.tid Mismatch');
     });
     it('must conform to API for buildRequests', function() {
       let request = spec.buildRequests(sampleValidBidRequests);
