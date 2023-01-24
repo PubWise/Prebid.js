@@ -104,13 +104,15 @@ const sampleValidBannerBidRequest = {
   'crumbs': {
     'pubcid': '9a62f261-3c0b-4cc8-8db3-a72ae86ec6ba'
   },
-  'fpd': {
-    'context': {
-      'adServer': {
-        'name': 'gam',
-        'adSlot': '/19968336/header-bid-tag-0'
-      },
-      'pbAdSlot': '/19968336/header-bid-tag-0'
+  ortb2Imp: {
+    ext: {
+      data: {
+        adserver: {
+          name: 'gam',
+          adslot: '/19968336/header-bid-tag-0'
+        },
+        pbadslot: '/19968336/header-bid-tag-0',
+      }
     }
   },
   'mediaTypes': {
@@ -182,13 +184,15 @@ const sampleValidBidRequests = [
         'required': false
       }
     },
-    'fpd': {
-      'context': {
-        'adServer': {
-          'name': 'gam',
-          'adSlot': '/19968336/header-bid-tag-0'
-        },
-        'pbAdSlot': '/19968336/header-bid-tag-0'
+    ortb2Imp: {
+      ext: {
+        data: {
+          adserver: {
+            name: 'gam',
+            adslot: '/19968336/header-bid-tag-0'
+          },
+          pbadslot: '/19968336/header-bid-tag-0',
+        }
       }
     },
     'mediaTypes': {
@@ -218,7 +222,7 @@ const sampleValidBidRequests = [
     'adUnitCode': 'div-gpt-ad-1460505748561-1',
     'transactionId': '2c8cd034-f068-4419-8c30-f07292c0d17b',
     'sizes': [],
-    'bidId': '6c148795eb836a',
+    'bidId': '30ab7516a51a7c',
     'bidderRequestId': '18a45bff5ff705',
     'auctionId': '9f20663c-4629-4b5c-bff6-ff3aa8319358',
     'src': 'client',
@@ -255,13 +259,15 @@ const sampleBidderBannerRequest = {
   'crumbs': {
     'pubcid': '9a62f261-3c0b-4cc8-8db3-a72ae86ec6ba'
   },
-  'fpd': {
-    'context': {
-      'adServer': {
-        'name': 'gam',
-        'adSlot': '/19968336/header-bid-tag-0'
-      },
-      'pbAdSlot': '/19968336/header-bid-tag-0'
+  ortb2Imp: {
+    ext: {
+      data: {
+        adserver: {
+          name: 'gam',
+          adslot: '/19968336/header-bid-tag-0'
+        },
+        pbadslot: '/19968336/header-bid-tag-0',
+      }
     }
   },
   'mediaTypes': {
@@ -338,13 +344,15 @@ const sampleBidderRequest = {
           'required': false
         }
       },
-      'fpd': {
-        'context': {
-          'adServer': {
-            'name': 'gam',
-            'adSlot': '/19968336/header-bid-tag-0'
-          },
-          'pbAdSlot': '/19968336/header-bid-tag-0'
+      ortb2Imp: {
+        ext: {
+          data: {
+            adserver: {
+              name: 'gam',
+              adslot: '/19968336/header-bid-tag-0'
+            },
+            pbadslot: '/19968336/header-bid-tag-0',
+          }
         }
       },
       'mediaTypes': {
@@ -374,7 +382,7 @@ const sampleBidderRequest = {
       'adUnitCode': 'div-gpt-ad-1460505748561-1',
       'transactionId': '2c8cd034-f068-4419-8c30-f07292c0d17b',
       'sizes': [],
-      'bidId': '6c148795eb836a',
+      'bidId': '30ab7516a51a7c',
       'bidderRequestId': '18a45bff5ff705',
       'auctionId': '9f20663c-4629-4b5c-bff6-ff3aa8319358',
       'src': 'client',
@@ -417,7 +425,7 @@ const sampleRTBResponse = {
             'crid': 'test',
             'w': 300,
             'h': 250
-          },
+          }
 
         ]
       }
@@ -538,7 +546,7 @@ describe('AdColonyAdapter', function () {
     it('parses banner', function() {
       let testBid = utils.deepClone(sampleValidBannerBidRequest)
       _parseAdSlot(testBid)
-      expect(testBid).to.deep.equal(sampleBidderBannerRequest, JSON.stringify(testBid) + ' ' + JSON.stringify(sampleBidderBannerRequest));
+      expect(testBid).to.deep.equal(sampleBidderBannerRequest);
     });
   });
 
@@ -723,7 +731,7 @@ describe('AdColonyAdapter', function () {
   };
 
   describe('Properly Validates SITE Bids', function () {
-    it('valid bid', function () {
+    it('valid site bid', function () {
       let validBid = {
           bidder: 'adcolony',
           params: {

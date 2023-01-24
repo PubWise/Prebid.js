@@ -1,3 +1,4 @@
+
 import { _each, isStr, deepClone, isArray, deepSetValue, inIframe, logMessage, logInfo, logWarn, logError } from '../src/utils.js';
 import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
@@ -468,7 +469,7 @@ function _createImpressionObject(bid, conf) {
   _addFloorFromFloorModule(impObj, bid);
 
   return impObj.hasOwnProperty(BANNER) ||
-          impObj.hasOwnProperty(NATIVE) ? impObj : UNDEFINED;
+    impObj.hasOwnProperty(NATIVE) ? impObj : UNDEFINED;
 }
 
 function _parseSlotParam(paramName, paramValue) {
@@ -504,7 +505,7 @@ function _parseAdSlot(bid) {
 
   if (bid.hasOwnProperty('mediaTypes')) {
     if (bid.mediaTypes.hasOwnProperty(BANNER) &&
-          bid.mediaTypes.banner.hasOwnProperty('sizes')) { // if its a banner, has mediaTypes and sizes
+        bid.mediaTypes.banner.hasOwnProperty('sizes')) { // if its a banner, has mediaTypes and sizes
       var i = 0;
       var sizeArray = [];
       for (;i < bid.mediaTypes.banner.sizes.length; i++) {
