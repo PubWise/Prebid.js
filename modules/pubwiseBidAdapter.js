@@ -4,7 +4,7 @@ import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, NATIVE, VIDEO } from '../src/mediaTypes.js';
 import { config } from '../src/config.js';
 import { convertOrtbRequestToProprietaryNative } from '../src/native.js';
-const VERSION = '0.2.0';
+const VERSION = '0.2.1';
 const GVLID = 842;
 const NET_REVENUE = true;
 const UNDEFINED = undefined;
