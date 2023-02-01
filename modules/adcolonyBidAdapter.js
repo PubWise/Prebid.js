@@ -18,9 +18,10 @@
  */
 
 import { _each, isStr, deepClone, isArray, deepSetValue, inIframe, logMessage, logInfo, logWarn, logError } from '../src/utils.js';
-import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, NATIVE } from '../src/mediaTypes.js';
+import { config } from '../src/config.js';
+import { convertOrtbRequestToProprietaryNative } from '../src/native.js';
 const VERSION = '0.2.0';
 const GVLID = 458;
 const NET_REVENUE = true;
@@ -161,6 +162,7 @@ export const spec = {
    * @return ServerRequest Info describing the request to the server.
    */
   buildRequests: function (validBidRequests, bidderRequest) {
+    validBidRequests = convertOrtbRequestToProprietaryNative(validBidRequests);
     var refererInfo;
     if (bidderRequest && bidderRequest.refererInfo) {
       refererInfo = bidderRequest.refererInfo;
@@ -248,7 +250,7 @@ export const spec = {
       deepSetValue(payload, 'regs.coppa', 1);
     }
 
-    var options = {contentType: 'text/plain'}
+    var options = {contentType: 'text/plain'};
 
     if (bid.params.mode && bid.params.mode == 'site') {
       // build site object
