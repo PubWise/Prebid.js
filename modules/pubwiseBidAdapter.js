@@ -6,7 +6,7 @@ import { config } from '../src/config.js';
 import { convertOrtbRequestToProprietaryNative } from '../src/native.js';
 import { OUTSTREAM, INSTREAM } from '../src/video.js';
 
-const VERSION = '0.2.1';
+const VERSION = '0.2.2';
 const GVLID = 842;
 const NET_REVENUE = true;
 const UNDEFINED = undefined;
