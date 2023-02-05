@@ -292,6 +292,7 @@ export const spec = {
 
     // try {
     if (response.body && response.body.seatbid && isArray(response.body.seatbid)) {
+      _logInfo('interpretResponse response body', response.body);
       // Supporting multiple bid responses for same adSize
       respCur = response.body.cur || respCur;
       response.body.seatbid.forEach(seatbidder => {
