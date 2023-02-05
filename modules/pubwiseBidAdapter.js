@@ -1,5 +1,5 @@
 
-import { _each, isBoolean, isNumber, isStr, deepClone, isArray, deepSetValue, inIframe, mergeDeep, deepAccess, logMessage, logInfo, logWarn, logError } from '../src/utils.js';
+import { _each, isBoolean, isEmptyStr, isNumber, isStr, deepClone, isArray, deepSetValue, inIframe, mergeDeep, deepAccess, logMessage, logInfo, logWarn, logError } from '../src/utils.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, NATIVE, VIDEO } from '../src/mediaTypes.js';
 import { config } from '../src/config.js';
@@ -14,7 +14,6 @@ const DEFAULT_CURRENCY = 'USD';
 const AUCTION_TYPE = 1;
 const BIDDER_CODE = 'pwbid';
 const LOG_PREFIX = 'PubWise: ';
-const ENDPOINT_URL = 'https://bid.pubwise.io/prebid';
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
 const PREBID_NATIVE_HELP_LINK = 'https://prebid.org/dev-docs/show-native-ads.html';
@@ -116,21 +115,13 @@ const NATIVE_MINIMUM_REQUIRED_IMAGE_ASSETS = [
 let isInvalidNativeRequest = false
 let NATIVE_ASSET_ID_TO_KEY_MAP = {};
 let NATIVE_ASSET_KEY_TO_ASSET_MAP = {};
+let ENDPOINT_URL = 'https://bid.pubwise.io/prebid';
 
 // together allows traversal of NATIVE_ASSETS_LIST in any direction
 // id -> key
 _each(NATIVE_ASSETS, anAsset => { NATIVE_ASSET_ID_TO_KEY_MAP[anAsset.ID] = anAsset.KEY });
 // key -> asset
 _each(NATIVE_ASSETS, anAsset => { NATIVE_ASSET_KEY_TO_ASSET_MAP[anAsset.KEY] = anAsset });
-
-function isNonEmptyArray(test) {
-  if (isArray(test) === true) {
-    if (test.length > 0) {
-      return true;
-    }
-  }
-  return false;
-}
 
 export const spec = {
   code: BIDDER_CODE,
@@ -159,7 +150,7 @@ export const spec = {
       // bid.mediaTypes.video.mimes OR bid.params.video.mimes should be present and must be a non-empty array
       let mediaTypesVideoMimes = deepAccess(bid.mediaTypes, 'video.mimes');
       let paramsVideoMimes = deepAccess(bid, 'params.video.mimes');
-      if (isNonEmptyArray(mediaTypesVideoMimes) === false && isNonEmptyArray(paramsVideoMimes) === false) {
+      if (_isNonEmptyArray(mediaTypesVideoMimes) === false && _isNonEmptyArray(paramsVideoMimes) === false) {
         logWarn(LOG_PREFIX + 'Error: For video ads, bid.mediaTypes.video.mimes OR bid.params.video.mimes should be present and must be a non-empty array. Call to OpenBid will not be sent for ad unit:' + JSON.stringify(bid));
         return false;
       }
@@ -280,7 +271,7 @@ export const spec = {
 
     return {
       method: 'POST',
-      url: ENDPOINT_URL,
+      url: _getEndpointURL(bid),
       data: payload,
       options: options,
       bidderRequest: bidderRequest,
@@ -370,6 +361,35 @@ export const spec = {
     // }
     return bidResponses;
   }
+}
+
+/**
+ * Determines if the array has values
+ *
+ * @param {object} test
+ * @returns {boolean}
+ */
+function _isNonEmptyArray(test) {
+  if (isArray(test) === true) {
+    if (test.length > 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Returns the overridden bid endpoint_url if it is set, primarily used for testing
+ *
+ * @param {object} bid the current bid
+ * @returns
+ */
+function _getEndpointURL(bid) {
+  if (!isEmptyStr(bid?.params?.endpoint_url)) {
+    return bid.params.endpoint_url;
+  }
+
+  return ENDPOINT_URL;
 }
 
 function _checkMediaType(bid, newBid) {
@@ -691,7 +711,7 @@ function _createBannerRequest(bid) {
   return bannerObj;
 }
 
-export function checkVideoPlacement(videoData, adUnitCode) {
+function _checkVideoPlacement(videoData, adUnitCode) {
   // Check for video.placement property. If property is missing display log message.
   if (!deepAccess(videoData, 'placement')) {
     logWarn(MSG_VIDEO_PLACEMENT_MISSING + ' for ' + adUnitCode);
@@ -704,7 +724,7 @@ function _createVideoRequest(bid) {
 
   if (videoData !== UNDEFINED) {
     videoObj = {};
-    checkVideoPlacement(videoData, bid.adUnitCode);
+    _checkVideoPlacement(videoData, bid.adUnitCode);
     for (var key in VIDEO_CUSTOM_PARAMS) {
       if (videoData.hasOwnProperty(key)) {
         videoObj[key] = _checkParamDataType(key, videoData[key], VIDEO_CUSTOM_PARAMS[key]);
@@ -938,6 +958,7 @@ function _logError(textValue, objectValue) {
 
 // these are exported only for testing so maintaining the JS convention of _ to indicate the intent
 export {
+  _checkVideoPlacement,
   _checkMediaType,
   _parseAdSlot
 }
