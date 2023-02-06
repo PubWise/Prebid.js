@@ -530,14 +530,14 @@ describe('AdColonyAdapter', function () {
     it('identifies native adm type', function() {
       let adm = '{"ver":"1.2","assets":[{"title":{"text":"AdColony Test"}},{"img":{"type":3,"url":"http://www.adcolony.com"}},{"img":{"type":1,"url":"http://www.adcolony.com"}},{"data":{"type":2,"value":"AdColony Test Desc"}},{"data":{"type":1,"value":"AdColony.com"}}],"link":{"url":""}}';
       let newBid = {mediaType: 'unknown'};
-      _checkMediaType(adm, newBid);
+      _checkMediaType({adm}, newBid);
       expect(newBid.mediaType).to.equal('native', adm + ' Is a Native adm');
     });
 
     it('identifies banner adm type', function() {
       let adm = '<div style="box-sizing: border-box;width:298px;height:248px;border: 1px solid rgba(0,0,0,.25);border-radius:10px;">↵	<h3 style="margin-top:80px;text-align: center;">AdColony Test Bid</h3>↵</div>';
       let newBid = {mediaType: 'unknown'};
-      _checkMediaType(adm, newBid);
+      _checkMediaType({adm}, newBid);
       expect(newBid.mediaType).to.equal('banner', adm + ' Is a Banner adm');
     });
   });
