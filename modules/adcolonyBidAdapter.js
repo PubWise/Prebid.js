@@ -19,22 +19,30 @@
 
 import { _each, isStr, deepClone, isArray, deepSetValue, inIframe, logMessage, logInfo, logWarn, logError } from '../src/utils.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
-import { BANNER, NATIVE } from '../src/mediaTypes.js';
+import { BANNER, NATIVE, VIDEO } from '../src/mediaTypes.js';
 import { config } from '../src/config.js';
 import { convertOrtbRequestToProprietaryNative } from '../src/native.js';
-const VERSION = '0.2.0';
+const VERSION = '0.2.2';
 const GVLID = 458;
 const NET_REVENUE = true;
 const UNDEFINED = undefined;
 const DEFAULT_CURRENCY = 'USD';
 // const AUCTION_TYPE = 1;
 const BIDDER_CODE = 'adcolony';
+const LOG_PREFIX = 'AdColony: ';
 const ENDPOINT_URL = 'https://omax.admarvel.com/rtb/omax?partner_id=9d251c721c1ccebb';
 // const ENDPOINT_URL = 'https://bid.pubwise.io/prebid'; // testing observable endpoint
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
 const PREBID_NATIVE_HELP_LINK = 'https://prebid.org/dev-docs/show-native-ads.html';
 // const USERSYNC_URL = '//127.0.0.1:8080/usersync'
+// const MSG_VIDEO_PLACEMENT_MISSING = 'Video.Placement param missing';
+
+const MEDIATYPE = [
+  BANNER,
+  VIDEO,
+  NATIVE
+]
 
 const CUSTOM_PARAMS = {
   'gender': '', // User gender
@@ -320,7 +328,7 @@ export const spec = {
               if (parsedRequest.imp && parsedRequest.imp.length > 0) {
                 parsedRequest.imp.forEach(req => {
                   if (bid.impid === req.id) {
-                    _checkMediaType(bid.adm, newBid);
+                    _checkMediaType(bid, newBid);
                     switch (newBid.mediaType) {
                       case BANNER:
                         break;
@@ -355,20 +363,31 @@ export const spec = {
   }
 }
 
-function _checkMediaType(adm, newBid) {
-  // Create a regex here to check the strings
-  var admJSON = '';
-  if (adm.indexOf('"ver":') >= 0) {
-    try {
-      admJSON = JSON.parse(adm.replace(/\\/g, ''));
-      if (admJSON && admJSON.assets) {
-        newBid.mediaType = NATIVE;
-      }
-    } catch (e) {
-      _logWarn('Error: Cannot parse native reponse for ad response: ' + adm);
-    }
+function _checkMediaType(bid, newBid) {
+  // Check Various ADM Aspects to Determine Media Type
+  if (bid.ext && bid.ext['bidtype'] != undefined) {
+    // this is the most explicity check
+    newBid.mediaType = MEDIATYPE[bid.ext.bidtype];
   } else {
-    newBid.mediaType = BANNER;
+    _logInfo('bid.ext.bidtype does not exist, checking alternatively for mediaType');
+    var adm = bid.adm;
+    var videoRegex = new RegExp(/VAST\s+version/);
+
+    if (adm.indexOf('"ver":') >= 0) {
+      try {
+        var admJSON = '';
+        admJSON = JSON.parse(adm.replace(/\\/g, ''));
+        if (admJSON && admJSON.assets) {
+          newBid.mediaType = NATIVE;
+        }
+      } catch (e) {
+        _logWarn('Error: Cannot parse native reponse for ad response: ', adm);
+      }
+    } else if (videoRegex.test(adm)) {
+      newBid.mediaType = VIDEO;
+    } else {
+      newBid.mediaType = BANNER;
+    }
   }
 }
 
@@ -514,7 +533,6 @@ function _createImpressionObject(bid, conf) {
   var mediaTypes = '';
 
   impObj = {
-    // id: bid.bidId,
     id: '1', // per adcolony request this shuold always be "1" and a string
     tagid: bid.params.adUnit || undefined,
     bidfloor: _parseSlotParam('bidFloor', bid.params.bidFloor), // capitalization dicated by 3.2.4 spec
@@ -575,7 +593,7 @@ function _parseSlotParam(paramName, paramValue) {
 }
 
 function _parseAdSlot(bid) {
-  _logInfo('parseAdSlot bid', bid)
+  _logInfo('parseAdSlot bid', bid);
   if (bid.adUnitCode) {
     bid.params.adUnit = bid.adUnitCode;
   } else {
@@ -605,7 +623,7 @@ function _parseAdSlot(bid) {
       }
     }
   } else {
-    _logWarn('MediaTypes are Required for all Adunit Configs', bid)
+    _logWarn('MediaTypes are Required for all Adunit Configs', bid);
   }
 }
 
@@ -843,22 +861,26 @@ function _createBannerRequest(bid) {
 // various error levels are not always used
 // eslint-disable-next-line no-unused-vars
 function _logMessage(textValue, objectValue) {
-  logMessage('AdColony: ' + textValue, objectValue);
+  objectValue = objectValue || '';
+  logMessage(LOG_PREFIX + textValue, objectValue);
 }
 
 // eslint-disable-next-line no-unused-vars
 function _logInfo(textValue, objectValue) {
-  logInfo('AdColony: ' + textValue, objectValue);
+  objectValue = objectValue || '';
+  logInfo(LOG_PREFIX + textValue, objectValue);
 }
 
 // eslint-disable-next-line no-unused-vars
 function _logWarn(textValue, objectValue) {
-  logWarn('AdColony: ' + textValue, objectValue);
+  objectValue = objectValue || '';
+  logWarn(LOG_PREFIX + textValue, objectValue);
 }
 
 // eslint-disable-next-line no-unused-vars
 function _logError(textValue, objectValue) {
-  logError('AdColony: ' + textValue, objectValue);
+  objectValue = objectValue || '';
+  logError(LOG_PREFIX + textValue, objectValue);
 }
 
 // function _decorateLog() {

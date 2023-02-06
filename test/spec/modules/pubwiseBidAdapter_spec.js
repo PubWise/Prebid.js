@@ -845,7 +845,7 @@ describe('PubWiseAdapter', function () {
     describe('Checking for Video.Placement property', function() {
       let sandbox, utilsMock;
       const adUnit = 'DivCheckPlacement';
-      const msg_placement_missing = 'Video.Placement param missing for DivCheckPlacement';
+      const msg_placement_missing = 'PubWise: Video.Placement param missing for DivCheckPlacement';
       let videoData = {
         battr: [6, 7],
         skipafter: 15,
@@ -871,6 +871,7 @@ describe('PubWiseAdapter', function () {
 
       it('should log Video.Placement param missing', function() {
         _checkVideoPlacement(videoData, adUnit);
+        // when failing this gives an odd message about "AssertError: expected logWarn to be called with arguments" it means the specific message expected
         sinon.assert.calledWith(utils.logWarn, msg_placement_missing);
       })
       it('shoud not log Video.Placement param missing', function() {
