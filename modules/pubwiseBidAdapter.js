@@ -14,7 +14,7 @@ const DEFAULT_CURRENCY = 'USD';
 const AUCTION_TYPE = 1;
 const BIDDER_CODE = 'pwbid';
 const LOG_PREFIX = 'PubWise: ';
-let ENDPOINT_URL = 'https://bid.pubwise.io/prebid';
+const ENDPOINT_URL = 'https://bid.pubwise.io/prebid';
 // const ENDPOINT_URL = 'https://bid.pubwise.io/prebid'; // testing observable endpoint
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
@@ -926,7 +926,7 @@ function _isNonEmptyArray(test) {
  * @returns
  */
 function _getEndpointURL(bid) {
-  if (!isEmptyStr(bid?.params?.endpoint_url)) {
+  if (!isEmptyStr(bid?.params?.endpoint_url) && bid?.params?.endpoint_url != UNDEFINED) {
     return bid.params.endpoint_url;
   }
 

@@ -487,6 +487,16 @@ const samplePBBidObjects = [
 
 describe('PubWiseAdapter', function () {
   describe('Handles Params Properly', function () {
+    it('properly sets the default endpoint', function () {
+      const referenceEndpoint = 'https://bid.pubwise.io/prebid';
+      let endpointBidRequest = utils.deepClone(sampleValidBidRequests);
+      // endpointBidRequest.forEach((bidRequest) => {
+      //   bidRequest.params.endpoint_url = newEndpoint;
+      // });
+      let result = spec.buildRequests(endpointBidRequest, {auctionId: 'placeholder'});
+      expect(result.url).to.equal(referenceEndpoint);
+    });
+
     it('allows endpoint to be reset', function () {
       const newEndpoint = 'http://www.pubwise.io/endpointtest';
       let endpointBidRequest = utils.deepClone(sampleValidBidRequests);
