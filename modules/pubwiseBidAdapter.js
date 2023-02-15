@@ -135,7 +135,7 @@ export const spec = {
    * @return boolean True if this is a valid bid, and false otherwise.
    */
   isBidRequestValid: function (bid) {
-    // siteId is required
+    // siteId is required for any type
     if (bid.params && bid.params.siteId) {
       // it must be a string
       if (!isStr(bid.params.siteId)) {
