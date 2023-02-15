@@ -142,33 +142,33 @@ export const spec = {
         _logWarn('siteId is required for bid', bid);
         return false;
       }
-    } else {
-      return false;
+
+      // video ad validation
+      if (bid.hasOwnProperty('mediaTypes') && bid.mediaTypes.hasOwnProperty(VIDEO)) {
+        // bid.mediaTypes.video.mimes OR bid.params.video.mimes should be present and must be a non-empty array
+        let mediaTypesVideoMimes = deepAccess(bid.mediaTypes, 'video.mimes');
+        let paramsVideoMimes = deepAccess(bid, 'params.video.mimes');
+        if (_isNonEmptyArray(mediaTypesVideoMimes) === false && _isNonEmptyArray(paramsVideoMimes) === false) {
+          _logWarn('Error: For video ads, bid.mediaTypes.video.mimes OR bid.params.video.mimes should be present and must be a non-empty array. Call suppressed:', JSON.stringify(bid));
+          return false;
+        }
+
+        if (!bid.mediaTypes[VIDEO].hasOwnProperty('context')) {
+          _logError(`no context specified in bid. Rejecting bid: `, JSON.stringify(bid));
+          return false;
+        }
+
+        if (bid.mediaTypes[VIDEO].context === 'outstream') {
+          delete bid.mediaTypes[VIDEO];
+          _logWarn(`outstream not currently supported `, JSON.stringify(bid));
+          return false;
+        }
+      }
+
+      return true;
     }
 
-    // video ad validation
-    if (bid.hasOwnProperty('mediaTypes') && bid.mediaTypes.hasOwnProperty(VIDEO)) {
-      // bid.mediaTypes.video.mimes OR bid.params.video.mimes should be present and must be a non-empty array
-      let mediaTypesVideoMimes = deepAccess(bid.mediaTypes, 'video.mimes');
-      let paramsVideoMimes = deepAccess(bid, 'params.video.mimes');
-      if (_isNonEmptyArray(mediaTypesVideoMimes) === false && _isNonEmptyArray(paramsVideoMimes) === false) {
-        _logWarn('Error: For video ads, bid.mediaTypes.video.mimes OR bid.params.video.mimes should be present and must be a non-empty array. Call suppressed:', JSON.stringify(bid));
-        return false;
-      }
-
-      if (!bid.mediaTypes[VIDEO].hasOwnProperty('context')) {
-        _logError(`no context specified in bid. Rejecting bid: `, bid);
-        return false;
-      }
-
-      if (bid.mediaTypes[VIDEO].context === 'outstream') {
-        delete bid.mediaTypes[VIDEO];
-        _logWarn(`outstream not currently supported `, bid);
-        return false;
-      }
-    }
-
-    return true;
+    return false;
   },
   /**
    * Make a server request from the list of BidRequests.
