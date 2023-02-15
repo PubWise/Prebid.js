@@ -333,6 +333,7 @@ export const spec = {
                         newBid.width = bid.hasOwnProperty('w') ? bid.w : req.video.w;
                         newBid.height = bid.hasOwnProperty('h') ? bid.h : req.video.h;
                         newBid.vastXml = bid.adm;
+                        newBid.vastUrl = bid.vastUrl;
                         break;
                       case NATIVE:
                         _parseNativeResponse(bid, newBid);
