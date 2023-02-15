@@ -152,7 +152,7 @@ export const spec = {
       let mediaTypesVideoMimes = deepAccess(bid.mediaTypes, 'video.mimes');
       let paramsVideoMimes = deepAccess(bid, 'params.video.mimes');
       if (_isNonEmptyArray(mediaTypesVideoMimes) === false && _isNonEmptyArray(paramsVideoMimes) === false) {
-        _logWarn('Error: For video ads, bid.mediaTypes.video.mimes OR bid.params.video.mimes should be present and must be a non-empty array. Call suppressed:', JSON.strinfigy(bid));
+        _logWarn('Error: For video ads, bid.mediaTypes.video.mimes OR bid.params.video.mimes should be present and must be a non-empty array. Call suppressed:', JSON.stringify(bid));
         return false;
       }
 
